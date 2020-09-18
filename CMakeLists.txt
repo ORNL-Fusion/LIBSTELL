@@ -6,6 +6,11 @@ project (libstell C Fortran)
 #  preprocessor.
 set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
 
+# FIXME: Should use standard preprocessor names to detect the current system.
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_definitions (-DDARWIN)
+endif ()
+
 OPTION (USE_PROFILER "Activate code profiling." OFF)
 if (USE_PROFILER)
     add_definitions (-DPROFILE_ON)
