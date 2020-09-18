@@ -1,0 +1,9 @@
+target_sources(stell
+               PRIVATE
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/write_mod.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ajax_mod.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/linear1_mod.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/spec_kind_mod.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/spline1_mod.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/track_mod.f90>
+)

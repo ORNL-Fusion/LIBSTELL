@@ -1,0 +1,17 @@
+target_sources(stell
+               PRIVATE
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vpassm.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cfft99.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cftfax.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cftrig.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fact.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fax.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fft99.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fft99a.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fft99b.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fft991.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fftfax.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fftrig.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fmn_to_uv.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/trigfact.f>
+)

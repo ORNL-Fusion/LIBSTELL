@@ -1,0 +1,10 @@
+target_sources(stell
+               PRIVATE
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_attrib.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_GenGet.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_GenPut.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_inqvar.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_opncls.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf.f90>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/handle_err.f90>
+)

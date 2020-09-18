@@ -1,0 +1,25 @@
+target_sources(stell
+               PRIVATE
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_bg_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_modular_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_modular_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_modular_wsurf.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_saddle_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_saddle_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_saddle_wsurf.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_tf_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_vf_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/init_vf_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/initialize_coilsin.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_bg_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_modular_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_modular_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_modular_wsurf.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_saddle_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_saddle_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_saddle_wsurf.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_tf_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_vf_coils.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/load_vf_currents.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/write_coilsin.f>
+)
