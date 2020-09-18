@@ -2,6 +2,10 @@ cmake_minimum_required (VERSION 3.14)
 
 project (libstell C Fortran)
 
+#  Fortran specific settings. The first setting tells the compiler to use the C
+#  preprocessor.
+set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
+
 OPTION (USE_PROFILER "Activate code profiling." OFF)
 if (USE_PROFILER)
     add_definitions (-DPROFILE_ON)
