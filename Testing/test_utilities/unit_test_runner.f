@@ -1,6 +1,6 @@
 !*******************************************************************************
 !>  @file unit_test_runner.f
-!>  @brief Utility to tun the LIBSTELL unit tests.
+!>  @brief Utility to run the LIBSTELL unit tests.
 !
 !  Note separating the Doxygen comment block here so detailed decription is
 !  found in the Module not the file.

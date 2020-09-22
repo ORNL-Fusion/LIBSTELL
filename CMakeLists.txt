@@ -26,11 +26,22 @@ add_library (stell STATIC)
 
 add_subdirectory (Sources)
 
+################################################################################
+#  Testing                                                                     #
+################################################################################
+
 #  Build test utilities.
 add_executable (xstell_unit_test_runner)
 add_dependencies (xstell_unit_test_runner stell)
 
 target_link_libraries (xstell_unit_test_runner stell)
 target_include_directories (xstell_unit_test_runner PUBLIC $<TARGET_PROPERTY:stell,BINARY_DIR>)
+
+#  Build file_opts testers
+add_executable (xstell_file_opts_runner)
+add_dependencies (xstell_file_opts_runner stell)
+
+target_link_libraries (xstell_file_opts_runner stell)
+target_include_directories (xstell_file_opts_runner PUBLIC $<TARGET_PROPERTY:stell,BINARY_DIR>)
 
 add_subdirectory (Testing)
