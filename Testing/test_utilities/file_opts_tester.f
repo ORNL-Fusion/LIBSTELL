@@ -20,7 +20,7 @@
      local_error = 0
      test_error = 0
 
-#  A second python utility will check that the copy was made.
+!  A second python utility will check that the copy was made.
      CALL copy_file('test_file', 'test_file_copy', local_error)
      IF (local_error .ne. 0) THEN
         WRITE (*,*) 'Copy file test failed.'
@@ -33,7 +33,7 @@
         test_error = local_error
      END IF
 
-#  The delete directory should check if the file was successfully moved.
+!  The delete directory should check if the file was successfully moved.
      CALL move_file('test_file', 'test_directory/test_file_move', local_error)
      IF (local_error .ne. 0) THEN
         WRITE (*,*) 'Move file test failed.'
