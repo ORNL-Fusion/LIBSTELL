@@ -1,0 +1,20 @@
+# Add subdirectories for all the sources.
+add_subdirectory (Coils)
+add_subdirectory (Ezcdf)
+add_subdirectory (FFTpack)
+add_subdirectory (GMRes)
+add_subdirectory (Linpack)
+add_subdirectory (Lsode)
+add_subdirectory (Miscel)
+add_subdirectory (Modules)
+add_subdirectory (Optimization)
+add_subdirectory (Pspline)
+add_subdirectory (QMRpack)
+add_subdirectory (SMPINT)
+add_subdirectory (SVDpack)
+add_subdirectory (Track)
+
+if (USE_FAST_COPY)
+    add_subdirectory (C)
+endif ()
+

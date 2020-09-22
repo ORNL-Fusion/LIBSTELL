@@ -1,0 +1,13 @@
+target_sources(stell
+               PRIVATE
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polysvd.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pythag.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SORTSVD.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SVBKSB.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/svd_solve.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/svdcmp.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/svdinv.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/svdinv2.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/svdsolveb.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/svdsolveuv.f>
+)

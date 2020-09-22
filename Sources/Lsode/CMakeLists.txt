@@ -1,0 +1,12 @@
+target_sources(stell
+               PRIVATE
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xerrwv.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cfode.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ewset.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/intdy.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lsode.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/prepj.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/solsy.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/stode.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vnorm.f>
+)
