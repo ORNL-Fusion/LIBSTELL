@@ -25,3 +25,12 @@ endif ()
 add_library (stell STATIC)
 
 add_subdirectory (Sources)
+
+#  Build test utilities.
+add_executable (xstell_unit_test_runner)
+add_dependencies (xstell_unit_test_runner stell)
+
+target_link_libraries (xstell_unit_test_runner stell)
+target_include_directories (xstell_unit_test_runner PUBLIC $<TARGET_PROPERTY:stell,BINARY_DIR>)
+
+add_subdirectory (Testing)
