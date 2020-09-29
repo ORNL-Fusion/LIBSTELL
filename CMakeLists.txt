@@ -2,13 +2,13 @@ cmake_minimum_required (VERSION 3.14)
 
 project (libstell C Fortran)
 
-#  Fortran specific settings. The first setting tells the compiler to use the C
-#  preprocessor.
-set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
+add_library (stell STATIC)
+
+add_subdirectory (Sources)
 
 # FIXME: Should use standard preprocessor names to detect the current system.
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    add_definitions (-DDARWIN)
+    target_compile_options (stell PUBLIC -DDARWIN)
 endif ()
 
 OPTION (USE_PROFILER "Activate code profiling." OFF)
@@ -22,9 +22,9 @@ if (USE_FAST_COPY)
     target_compile_options (stell PUBLIC -DFAST_COPY)
 endif ()
 
-add_library (stell STATIC)
-
-add_subdirectory (Sources)
+#  Fortran specific settings. The first setting tells the compiler to use the C
+#  preprocessor.
+target_compile_options (stell PUBLIC -cpp)
 
 ################################################################################
 #  Testing                                                                     #
