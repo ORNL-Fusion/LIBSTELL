@@ -30,7 +30,7 @@ target_compile_options (stell PUBLIC -cpp)
 
 if (MPI_Fortran_FOUND)
     target_compile_options (stell PUBLIC -DMPI_OPT)
-    target_include_directory (stell PRIVATE ${MPI_C_INCLUDE_DIRS})
+    target_include_directories (stell PRIVATE ${MPI_C_INCLUDE_DIRS})
     target_link_library (stell INTERFACE MPI::MPI_Fortran)
 endif ()
 
