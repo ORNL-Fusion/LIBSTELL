@@ -106,7 +106,7 @@ if (NetCDF_FOUND)
     endif ()
 
     if (NOT TARGET NetCDF::NetCDF)
-        add_library (NetCDF::NetCDF INTERFACE)
+        add_library (NetCDF::NetCDF INTERFACE IMPORTED)
         target_link_libraries (NetCDF::NetCDF INTERFACE NetCDF::NetCDF_C NetCDF::NetCDF_Fortran)
     endif ()
 endif ()
