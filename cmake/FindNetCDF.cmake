@@ -8,51 +8,6 @@ Provides the following variables:
   * `NetCDF::NetCDF`: A target to use with `target_link_libraries`.
 #]==]
 
-# Try to find a CMake-built NetCDF.
-find_package (NetCDF CONFIG QUIET)
-if (NetCDF_FOUND)
-# Forward the variables in a consistent way.
-    set (NetCDF_FOUND "${NetCDF_FOUND}")
-    set (NetCDF_INCLUDE_DIRS "${NetCDF_INCLUDE_DIR}")
-    set (NetCDF_LIBRARIES "${NetCDF_LIBRARIES}")
-    set (NetCDF_VERSION "${NetCDFVersion}")
-    if (NOT TARGET NetCDF::NetCDF)
-        add_library(NetCDF::NetCDF INTERFACE IMPORTED)
-        if (TARGET "netCDF::netcdf")
-# 4.7.3
-           set_target_properties (NetCDF::NetCDF PROPERTIES
-                                  INTERFACE_LINK_LIBRARIES "netCDF::netcdf")
-        elseif (TARGET "netcdf netcdff")
-            set_target_properties(NetCDF::NetCDF PROPERTIES
-                                  INTERFACE_LINK_LIBRARIES "netcdf netcdff")
-        else ()
-            set_target_properties(NetCDF::NetCDF PROPERTIES
-                                  INTERFACE_LINK_LIBRARIES "${netCDF_LIBRARIES}")
-        endif ()
-    endif ()
-# Skip the rest of the logic in this file.
-    return ()
-endif ()
-
-find_package (PkgConfig QUIET)
-if (PkgConfig_FOUND)
-    pkg_check_modules(_NetCDF QUIET netcdf IMPORTED_TARGET)
-    if (_NetCDF_FOUND)
-# Forward the variables in a consistent way.
-        set (NetCDF_FOUND "${_NetCDF_FOUND}")
-        set (NetCDF_INCLUDE_DIRS "${_NetCDF_INCLUDE_DIRS}")
-        set (NetCDF_LIBRARIES "${_NetCDF_LIBRARIES}")
-        set (NetCDF_VERSION "${_NetCDF_VERSION}")
-        if (NOT TARGET NetCDF::NetCDF)
-            add_library (NetCDF::NetCDF INTERFACE IMPORTED)
-            set_target_properties (NetCDF::NetCDF PROPERTIES
-                                   INTERFACE_LINK_LIBRARIES "PkgConfig::_NetCDF")
-        endif ()
-# Skip the rest of the logic in this file.
-        return ()
-    endif ()
-endif ()
-
 # Find it manually.
 find_path (NetCDF_INCLUDE_DIR
            NAMES netcdf.h
@@ -62,11 +17,11 @@ mark_as_advanced (NetCDF_INCLUDE_DIR)
 find_library (NetCDF_C_LIBRARY
               NAMES netcdf
               DOC "netcdf C library")
-mark_as_advanced (NetCDF_LIBRARY)
+mark_as_advanced (NetCDF_C_LIBRARY)
 find_library (NetCDF_Fortran_LIBRARY
               NAMES netcdff
               DOC "netcdf Fortran library")
-mark_as_advanced (NetCDF_LIBRARY)
+mark_as_advanced (NetCDF_Fortran_LIBRARY)
 
 if (NetCDF_INCLUDE_DIR)
     file (STRINGS "${NetCDF_INCLUDE_DIR}/netcdf_meta.h" _netcdf_version_lines
