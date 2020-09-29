@@ -22,9 +22,9 @@ if (NetCDF_FOUND)
 # 4.7.3
            set_target_properties (NetCDF::NetCDF PROPERTIES
                                   INTERFACE_LINK_LIBRARIES "netCDF::netcdf")
-        elseif (TARGET "netcdf")
+        elseif (TARGET "netcdf netcdff")
             set_target_properties(NetCDF::NetCDF PROPERTIES
-                                  INTERFACE_LINK_LIBRARIES "netcdf")
+                                  INTERFACE_LINK_LIBRARIES "netcdf netcdff")
         else ()
             set_target_properties(NetCDF::NetCDF PROPERTIES
                                   INTERFACE_LINK_LIBRARIES "${netCDF_LIBRARIES}")
@@ -95,7 +95,7 @@ if (NetCDF_FOUND)
     if (NOT TARGET NetCDF::NetCDF)
         add_library (NetCDF::NetCDF UNKNOWN IMPORTED)
         set_target_properties (NetCDF::NetCDF PROPERTIES
-                               LINK_LIBRARIES "${NetCDF_LIBRARIES}"
+                               INTERFACE_LINK_LIBRARIES "${NetCDF_LIBRARIES}"
                                INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_INCLUDE_DIR})
     endif ()
 endif ()
