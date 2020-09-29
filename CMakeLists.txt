@@ -31,12 +31,12 @@ target_compile_options (stell PUBLIC -cpp)
 if (MPI_Fortran_FOUND)
     target_compile_options (stell PUBLIC -DMPI_OPT)
     target_include_directories (stell PRIVATE ${MPI_C_INCLUDE_DIRS})
-    target_link_library (stell INTERFACE MPI::MPI_Fortran)
+    target_link_libraries (stell INTERFACE MPI::MPI_Fortran)
 endif ()
 
 if (NETCDF_FOUND)
     target_compile_options (stell PUBLIC -DNETCDF)
-    target_link_library (stell INTERFACE NetCDF::NetCDF)
+    target_link_libraries (stell INTERFACE NetCDF::NetCDF)
 endif ()
 
 ################################################################################
