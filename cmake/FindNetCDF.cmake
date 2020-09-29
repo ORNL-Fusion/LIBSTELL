@@ -36,7 +36,7 @@ endif ()
 
 find_package (PkgConfig QUIET)
 if (PkgConfig_FOUND)
-    pkg_check_modules(_NetCDF QUIET netcdf netcdff IMPORTED_TARGET)
+    pkg_check_modules(_NetCDF QUIET netcdf IMPORTED_TARGET)
     if (_NetCDF_FOUND)
 # Forward the variables in a consistent way.
         set (NetCDF_FOUND "${_NetCDF_FOUND}")
@@ -92,10 +92,21 @@ if (NetCDF_FOUND)
     set (NetCDF_INCLUDE_DIRS ${NetCDF_INCLUDE_DIR})
     set (NetCDF_LIBRARIES "${NetCDF_C_LIBRARY} ${NetCDF_Fortran_LIBRARY}")
 
+    if (NOT TARGET NetCDF::NetCDF_C)
+       add_library (NetCDF::NetCDF_C UNKNOWN IMPORTED)
+       set_target_properties (NetCDF::NetCDF_C PROPERTIES
+                              IMPORTED_LOCATION "${NetCDF_C_LIBRARY}"
+                              INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_INCLUDE_DIR})
+    endif ()
+    if (NOT TARGET NetCDF::NetCDF_Fortran)
+       add_library (NetCDF::NetCDF_Fortran UNKNOWN IMPORTED)
+       set_target_properties (NetCDF::NetCDF_Fortran PROPERTIES
+                              IMPORTED_LOCATION "${NetCDF_Fortran_LIBRARY}"
+                              INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_INCLUDE_DIR})
+    endif ()
+
     if (NOT TARGET NetCDF::NetCDF)
-        add_library (NetCDF::NetCDF UNKNOWN IMPORTED)
-        set_target_properties (NetCDF::NetCDF PROPERTIES
-                               IMPORTED_LOCATION "${NetCDF_Fortran_LIBRARY}"
-                               INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_INCLUDE_DIR})
+        add_library (NetCDF::NetCDF INTERFACE)
+        target_link_libraries (NetCDF::NetCDF INTERFACE NetCDF::NetCDF_C NetCDF::NetCDF_Fortran)
     endif ()
 endif ()
