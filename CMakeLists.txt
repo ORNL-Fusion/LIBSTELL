@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.14)
 
 project (libstell C Fortran)
 
+find_package (MPI REQUIRED)
+
 add_library (stell STATIC)
 
 add_subdirectory (Sources)
@@ -25,6 +27,12 @@ endif ()
 #  Fortran specific settings. The first setting tells the compiler to use the C
 #  preprocessor.
 target_compile_options (stell PUBLIC -cpp)
+
+if (MPI_Fortran_FOUND)
+    target_compile_options (stell PUBLIC -DMPI_OPT)
+    target_include_directory (stell PRIVATE ${MPI_C_INCLUDE_DIRS})
+    target_link_library (stell INTERFACE MPI::MPI_Fortran)
+endif ()
 
 ################################################################################
 #  Testing                                                                     #
