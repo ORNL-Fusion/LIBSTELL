@@ -95,7 +95,7 @@ if (NetCDF_FOUND)
     if (NOT TARGET NetCDF::NetCDF)
         add_library (NetCDF::NetCDF UNKNOWN IMPORTED)
         set_target_properties (NetCDF::NetCDF PROPERTIES
-                               INTERFACE_LINK_LIBRARIES "${NetCDF_LIBRARIES}"
+                               IMPORTED_LOCATION "${NetCDF_Fortran_LIBRARY}"
                                INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_INCLUDE_DIR})
     endif ()
 endif ()
