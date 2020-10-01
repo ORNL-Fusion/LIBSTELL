@@ -39,9 +39,9 @@ if (NetCDF_INCLUDE_DIR)
 endif ()
 
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args(NetCDF
-                                  REQUIRED_VARS NetCDF_C_LIBRARY NetCDF_Fortran_LIBRARY NetCDF_INCLUDE_DIR
-                                  VERSION_VAR NetCDF_VERSION)
+find_package_handle_standard_args (NetCDF
+                                   REQUIRED_VARS NetCDF_C_LIBRARY NetCDF_Fortran_LIBRARY NetCDF_INCLUDE_DIR
+                                   VERSION_VAR NetCDF_VERSION)
 
 if (NetCDF_FOUND)
     set (NetCDF_INCLUDE_DIRS ${NetCDF_INCLUDE_DIR})
@@ -63,6 +63,6 @@ if (NetCDF_FOUND)
     if (NOT TARGET NetCDF::NetCDF)
         add_library (NetCDF::NetCDF INTERFACE IMPORTED)
         target_link_libraries (NetCDF::NetCDF INTERFACE NetCDF::NetCDF_C NetCDF::NetCDF_Fortran)
-        target_include_directories(NetCDF::NetCDF INTERFACE ${NetCDF_INCLUDE_DIR})
+        target_include_directories (NetCDF::NetCDF INTERFACE ${NetCDF_INCLUDE_DIR})
     endif ()
 endif ()

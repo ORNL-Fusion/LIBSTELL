@@ -12,18 +12,19 @@ add_subdirectory (Sources)
 
 # FIXME: Should use standard preprocessor names to detect the current system.
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_compile_options (stell PUBLIC -DDARWIN)
+    target_compile_definitions (stell PUBLIC DARWIN)
 endif ()
 
 OPTION (USE_PROFILER "Activate code profiling." OFF)
 if (USE_PROFILER)
-    target_compile_options (stell PUBLIC -DPROFILE_ON)
+    target_compile_definitions (stell PUBLIC PROFILE_ON)
 endif ()
 
-# Activate or Deactivate fast copies. The fast copies maybe activated by setting -DUSE_FAST_COPY=ON on the cmake command line.
+# Activate or Deactivate fast copies. The fast copies maybe activated by setting
+# -DUSE_FAST_COPY=ON on the cmake command line.
 OPTION (USE_FAST_COPY "Activate code fast copies." OFF)
 if (USE_FAST_COPY)
-    target_compile_options (stell PUBLIC -DFAST_COPY)
+    target_compile_definitions (stell PUBLIC FAST_COPY)
 endif ()
 
 #  Fortran specific settings. The first setting tells the compiler to use the C
