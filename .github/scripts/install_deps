@@ -1,0 +1,4 @@
+# Commands to install libraries needed by the project.
+sudo apt-get install libnetcdf-dev
+sudo apt-get install libnetcdff-dev
+sudo apt-get install libopenmpi-dev
