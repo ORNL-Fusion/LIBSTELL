@@ -37,8 +37,8 @@ if (MPI_Fortran_FOUND)
     target_link_libraries (stell INTERFACE MPI::MPI_Fortran)
 endif ()
 
-if (NETCDF_FOUND)
-    target_compile_options (stell PUBLIC -DNETCDF)
+if (NetCDF_FOUND)
+    target_compile_definitions (stell PUBLIC NETCDF)
     target_link_libraries (stell INTERFACE NetCDF::NetCDF)
 endif ()
 
