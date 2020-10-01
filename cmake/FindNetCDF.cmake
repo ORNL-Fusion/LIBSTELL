@@ -10,9 +10,11 @@ Provides the following variables:
 
 # Find it manually.
 find_path (NetCDF_INCLUDE_DIR
-           NAMES netcdf.h
+           NAMES netcdf.h netcdf.inc
            DOC "netcdf include directories")
 mark_as_advanced (NetCDF_INCLUDE_DIR)
+
+message (STATUS ${NetCDF_INCLUDE_DIR})
 
 find_library (NetCDF_C_LIBRARY
               NAMES netcdf
