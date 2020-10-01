@@ -14,8 +14,6 @@ find_path (NetCDF_INCLUDE_DIR
            DOC "netcdf include directories")
 mark_as_advanced (NetCDF_INCLUDE_DIR)
 
-message (STATUS ${NetCDF_INCLUDE_DIR})
-
 find_library (NetCDF_C_LIBRARY
               NAMES netcdf
               DOC "netcdf C library")
@@ -65,5 +63,6 @@ if (NetCDF_FOUND)
     if (NOT TARGET NetCDF::NetCDF)
         add_library (NetCDF::NetCDF INTERFACE IMPORTED)
         target_link_libraries (NetCDF::NetCDF INTERFACE NetCDF::NetCDF_C NetCDF::NetCDF_Fortran)
+        target_include_directories(NetCDF::NetCDF INTERFACE ${NetCDF_INCLUDE_DIR})
     endif ()
 endif ()
