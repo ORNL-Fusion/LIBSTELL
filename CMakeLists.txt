@@ -39,7 +39,7 @@ endif ()
 
 if (NetCDF_FOUND)
     target_compile_definitions (stell PUBLIC NETCDF)
-    target_link_libraries (stell INTERFACE NetCDF::NetCDF)
+    target_link_libraries (stell PUBLIC NetCDF::NetCDF)
 endif ()
 
 ################################################################################
