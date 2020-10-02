@@ -62,7 +62,7 @@ if (NetCDF_FOUND)
 
     if (NOT TARGET NetCDF::NetCDF)
         add_library (NetCDF::NetCDF INTERFACE IMPORTED)
-        target_link_libraries (NetCDF::NetCDF INTERFACE NetCDF::NetCDF_C NetCDF::NetCDF_Fortran)
+        target_link_libraries (NetCDF::NetCDF INTERFACE NetCDF::NetCDF_Fortran NetCDF::NetCDF_C)
         target_include_directories (NetCDF::NetCDF INTERFACE ${NetCDF_INCLUDE_DIR})
     endif ()
 endif ()
