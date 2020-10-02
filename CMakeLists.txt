@@ -10,9 +10,14 @@ add_library (stell STATIC)
 
 add_subdirectory (Sources)
 
-# FIXME: Should use standard preprocessor names to detect the current system.
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_compile_definitions (stell PUBLIC DARWIN)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR 
+        ${CMAKE_SYSTEM_NAME} MATCHES "CrayLinuxEnvironment")
+    target_compile_definitions (stell PUBLIC LINUX)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows" OR 
+        ${CMAKE_SYSTEM_NAME} MATCHES "MSYS")
+    target_compile_definitions (stell PUBLIC WIN32)
 endif ()
 
 OPTION (USE_PROFILER "Activate code profiling." OFF)
