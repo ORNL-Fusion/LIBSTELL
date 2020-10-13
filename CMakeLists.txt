@@ -6,6 +6,8 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package (NetCDF MODULE REQUIRED)
 find_package (SCALAPACK MODULE REQUIRED)
 find_package (MPI REQUIRED)
+find_package (BLAS REQUIRED)
+find_package (LAPACK REQUIRED)
 
 add_library (stell STATIC)
 
@@ -50,6 +52,14 @@ endif ()
 
 if (SCALAPACK_FOUND)
     target_link_libraries (stell PUBLIC SCALAPACK::SCALAPACK)
+endif ()
+
+if (BLAS_FOUND)
+    target_link_libraries (stell PUBLIC ${BLAS_LIBRARIES})
+endif ()
+
+if (LAPACK_FOUND)
+    target_link_libraries (stell PUBLIC ${LAPACK_LIBRARIES})
 endif ()
 
 ################################################################################
