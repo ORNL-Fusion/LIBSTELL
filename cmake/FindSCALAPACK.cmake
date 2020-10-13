@@ -2,9 +2,7 @@
 Provides the following variables:
 
   * `SCALAPACK_FOUND`: Whether SCALAPACK was found or not.
-  * `SCALAPACK_INCLUDE_DIRS`: Include directories necessary to use NetCDF.
-  * `SCALAPACK_LIBRARIES`: Libraries necessary to use NetCDF.
-  * `SCALAPACK_VERSION`: The version of NetCDF found.
+  * `SCALAPACK_LIBRARIES`: Libraries necessary to use SCALAPACK.
   * `SCALAPACK::SCALAPACK`: A target to use with `target_link_libraries`.
 #]==]
 
@@ -15,7 +13,7 @@ find_library (SCALAPACK_LIBRARY
 mark_as_advanced (SCALAPACK_LIBRARY)
 
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (NetCDF
+find_package_handle_standard_args (SCALAPACK
                                    REQUIRED_VARS SCALAPACK_LIBRARY)
 
 if (SCALAPACK_FOUND)
