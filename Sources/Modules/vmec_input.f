@@ -16,17 +16,12 @@
 !>  @header{Input variable, Description, Code Reference}
 !>
 !>  @table_section{vmec_control_param_sec, Control Parameters.}
-!>     @item{omp_num_threads,        Number of openmp threads to use. @b DEPRECATED @b,      vmec_input::omp_num_threads}
-!>     @item{gamma,                  Adiabatic factor for the pressure perturbation.,        vmec_input::gamma}
-!>     @item{niter,                  Maximum number of iterations to run. @b DEPRECATED @b
-!>                                   Use @ref vmec_input::niter_array instead.,              vmec_input::niter}
+!>     @item{adiabatic,              Adiabatic factor for the pressure perturbation.,        vmec_input::adiabatic}
 !>     @item{niter_array,            Array of iterations for the multigrid runs.,            vmec_input::niter_array}
 !>     @item{time_slice,             Time index value to label the output files.,            vmec_input::time_slice}
 !>     @item{nstep,                  Number of iterations between screen output.,            vmec_input::nstep}
 !>     @item{nvacskip,               Number of iterations between vacuum responses.,         vmec_input::nvacskip}
 !>     @item{delt,                   Time step value for minimization.,                      vmec_input::delt}
-!>     @item{ftol,                   Force tolarance for minimization. @b DEPRECATED @b
-!>                                   Use @ref vmec_input::ftol_array instead.,               vmec_input::ftol}
 !>     @item{ftol_array,             Array of force tolarances for the multigrid runs.,      vmec_input::ftol_array}
 !>     @item{tcon0,                  Weight factor for constraint force.,                    vmec_input::tcon0}
 !>     @table_subsection{vmec_precon_control_param_sec, Precondicioner control parameters.}
@@ -35,32 +30,16 @@
 !>     @table_subsection{vmec_giveup_control_param_sec, Early termination control parameters.}
 !>        @item{lgiveup,             Stop early if convergence is poor.,                     vmec_input::lgiveup}
 !>        @item{fgiveup,             Theshold tolarance for early exit.,                     vmec_input::lgiveup}
-!>     @table_subsection{vmec_continue_control_param_sec, Continue control parameters.}
-!>        @item{max_main_iterations, Number of additional iterations to use.,                vmec_input::lmoreiter}
 !>  @end_table
 !>
 !>  @table_section{vmec_control_flags_sec, Control flags.}
 !>     @item{lmove_axis,  Allow movement of the magnetic axis.,                       vmec_input::lmove_axis}
-!>     @item{lmac,        UNKNOWN,                                                    vmec_input::lmac}
 !>     @item{lforbal,     Use non-variational forces to ensure force balance.,        vmec_input::lforbal}
 !>     @item{lasym,       Allow non-stellarator symmetric terms.,                     vmec_input::lasym}
-!>     @item{lrfp,        Run in RFP mode. When true the iota profile becomes
-!>                        the q profile.,                                             vmec_input::lrfp}
-!>     @item{loldout,     Use text output when writting wout files.
-!>                        @b DEPRECATED @b,                                           vmec_input::loldout}
-!>     @item{ldiagno,     Get output for diagno 1.0 and 1.5.,                         vmec_input::ldiagno}
 !>     @item{lbsubs,      Capture current sheets.,                                    vmec_input::lbsubs}
-!>     @item{lfull3d1out, Write out full threed1 file if force tolarance is not met., vmec_input::lfull3d1out}
-!>     @item{lwouttxt,    Write out text based woutfile. Note text based wout files
-!>                        are deprecated.,                                            vmec_input::lwouttxt}
-!>     @item{lnyquist,    Write out the full nyquest spectrum when true. Write out a
-!>                        truncated spectrum to match mpol and ntor used for the
-!>                        equilibrium.,                                               vmec_input::lnyquist}
 !>  @end_table
 !>
 !>  @table_section{vmec_radial_parameters_sec, Radial parameters.}
-!>     @item{nsin,     Number of radial flux surfaces. @b DEPRECATED @b
-!>                     Use @ref vmec_input::ns_array instead.,             vmec_input::nsin}
 !>     @item{ns_array, Number of radial flux surfaces for each grid size., vmec_input::ns_array}
 !>     @item{aphi,     Radial surface redistribution factors.,             vmec_input::aphi}
 !>  @end_table
@@ -142,12 +121,6 @@
 !>        @item{spres_ped,  Value of s beyond which pressure profile is flat.,                                                      vmec_input::spres_ped}
 !>  @end_table
 !>
-!>  @table_section{vmec_anisotropy_parameters_sec, Anisotropy parameters.}
-!>     @item{bcrit, Hot particle energy deposition value for |B|. ANIMEC only., vmec_input::bcrit}
-!>     @item{at,    TPERP/TPAR ANIMEC only.,                                    vmec_input::at}
-!>     @item{ah,    PHOT/PTHERMAL ANIMEC only.,                                 vmec_input::ah}
-!>  @end_table
-!>
 !>  @table_section{vmec_edge_parameters_sec, Edge Boundary parameters.}
 !>     @item{phiedge,      Total toroidal flux.,                            vmec_input::phiedge}
 !>     @item{rbc,          R boundary coefficients stellarator symmetric.,  vmec_input::rbc}
@@ -163,10 +136,6 @@
 !>     @item{raxis_cs, R axis coefficients stellarator asymmetric.,                vmec_input::raxis_cs}
 !>     @item{zaxis_cs, R axis coefficients stellarator symmetric.,                 vmec_input::zaxis_cs}
 !>     @item{zaxis_cc, R axis coefficients stellarator asymmetric.,                vmec_input::zaxis_cc}
-!>     @item{raxis,    R axis coefficients stellarator symmetric. @b DEPRECATED @b
-!>                     Use @ref vmec_input::raxis_cc instead.,                     vmec_input::raxis}
-!>     @item{zaxis,    R axis coefficients stellarator symmetric. @b DEPRECATED @b
-!>                     Use @ref vmec_input::zaxis_cs instead.,                     vmec_input::zaxis}
 !>  @end_table
 !>
 !>  @section vmec_namelist_example_sec Example File.
@@ -229,7 +198,6 @@
 !*******************************************************************************
       MODULE vmec_input
       USE vparams, ONLY: rprec, dp, mpol1d, ntord, ndatafmax
-      USE vsvd0
 
       IMPLICIT NONE
 
@@ -248,35 +216,23 @@
       INTEGER, PARAMETER :: short_name = 20
 !>  Long name length.
       INTEGER, PARAMETER :: long_name = 200
-!>  Maximum number of spline knots.
+!>  Maximum number of parameterized profile arguments (ac, ai, am)
       INTEGER, PARAMETER :: max_profile = 20
-
 
 !*******************************************************************************
 !  VMEC input module variables.
 !*******************************************************************************
 !  Control Parameters
-!>  @deprecated
-!>  Number of OpenMP threads to use.
-      INTEGER                            :: omp_num_threads
 !>  Adiabatic factor for the pressure perturbation.
-      REAL (rprec)                       :: gamma
-!>  @deprecated
-!>  Maximum number of iterations to run.
-      INTEGER                            :: niter
+      REAL (rprec)                       :: adiabatic
 !>  Array of iterations for the multigrid runs.
       INTEGER, DIMENSION(max_grids)      :: niter_array
-!>  Time index value to label the output files.
-      REAL (rprec)                       :: time_slice
 !>  Number of iterations between screen output.
       INTEGER                            :: nstep
 !>  Number of iterations between vacuum responses.
       INTEGER                            :: nvacskip
 !>  Time step value for minimization.
       REAL (rprec)                       :: delt
-!>  @deprecated
-!>  Force tolarance for minimization.
-      REAL (rprec)                       :: ftol
 !>  Array of force tolarances for the multigrid runs.
       REAL (rprec), DIMENSION(max_grids) :: ftol_array
 !>  Weight factor for constraint force.
@@ -293,43 +249,18 @@
       LOGICAL      :: lgiveup
 !>  Theshold tolarance for early exit.
       REAL (rprec) :: fgiveup
-!  Continue control parameters.
-!>  Add more iterations if force residules are not met.
-      LOGICAL      :: lmoreiter
-!>  Number of additional iterations to use.
-      INTEGER      :: max_main_iterations
 
 !  Control flags.
 !>  Allow movement of the magnetic axis.
       LOGICAL :: lmove_axis
-!>  UNKNOWN
-      LOGICAL :: lmac
 !>  Use non-variational forces to ensure force balance.
       LOGICAL :: lforbal
 !>  Allow non-stellarator symmetric terms.
       LOGICAL :: lasym
-!>  Run in RFP mode.
-      LOGICAL :: lrfp
-!>  Use text output when writting wout files.
-      LOGICAL :: loldout
-!>  Get output for diagno 1.0 and 1.5.
-      LOGICAL :: ldiagno
 !>  Capture current sheets.
       LOGICAL :: lbsubs
-!>  Write out full threed1 file if force tolarance is not met.
-      LOGICAL :: lfull3d1out
-!>  Write out text based woutfile.
-      LOGICAL :: lwouttxt
-!>  VMEC called from inside v3fit.
-      LOGICAL :: l_v3fit
-!>  Print out full nyquest spectrum. When flase trunate the spectrum to just the
-!>  mpol, ntor values.
-      LOGICAL :: lnyquist
 
 !  Radial parameters.
-!>  @deprecated
-!>  Number of radial flux surfaces.
-      INTEGER                             :: nsin
 !>  Number of radial flux surfaces for each grid size.
       INTEGER, DIMENSION(max_grids)       :: ns_array
 !>  Radial surface redistribution factors.
@@ -400,14 +331,6 @@
 !>  Value of s beyond which pressure profile is flat.
       REAL (rprec)                           :: spres_ped
 
-!  Anisotropy parameters.
-!>  Hot particle energy deposition value for |B|.
-      REAL (rprec)                           :: bcrit
-!>  TPERP/TPAR ANIMEC only.
-      REAL (rprec), DIMENSION(0:max_profile) :: at
-!>  PHOT/PTHERMAL ANIMEC only.
-      REAL (rprec), DIMENSION(0:max_profile) :: ah
-
 !  Edge Boundary parameters.
 !>  Total toroidal flux.
       REAL (rprec)                                   :: phiedge
@@ -433,59 +356,6 @@
       REAL (rprec), DIMENSION(0:ntord) :: zaxis_cs
 !>  Z axis coefficients stellarator asymmetric.
       REAL (rprec), DIMENSION(0:ntord) :: zaxis_cc
-!>  @deprecated
-!>  R axis coefficients stellarator symmetric.
-      REAL (rprec), DIMENSION(0:ntord) :: raxis
-!>  @deprecated
-!>  Z axis coefficients stellarator symmetric.
-      REAL (rprec), DIMENSION(0:ntord) :: zaxis
-
-!  Unclassified.
-      INTEGER                              :: imse
-      INTEGER                              :: isnodes
-      INTEGER                              :: itse
-      INTEGER                              :: ipnodes
-      INTEGER                              :: iopt_raxis
-      INTEGER                              :: imatch_phiedge
-      INTEGER                              :: nflxs
-      INTEGER, DIMENSION(nbsetsp)          :: nbfld
-      INTEGER, DIMENSION(nfloops)          :: indxflx
-      INTEGER, DIMENSION(nbcoilsp,nbsetsp) :: indxbfld
-
-      REAL (rprec) :: phidiam
-      REAL (rprec) :: sigma_current
-      REAL (rprec) :: sigma_delphid
-      REAL (rprec) :: tensi
-      REAL (rprec) :: tensp
-      REAL (rprec) :: tensi2
-      REAL (rprec) :: fpolyi
-      REAL (rprec) :: presfac
-      REAL (rprec) :: mseangle_offset
-      REAL (rprec) :: pres_offset
-      REAL (rprec) :: mseangle_offsetm
-
-      REAL (rprec), DIMENSION(nmse)             :: mseprof
-      REAL (rprec), DIMENSION(ntse)             :: rthom
-      REAL (rprec), DIMENSION(ntse)             :: datathom
-      REAL (rprec), DIMENSION(ntse)             :: sigma_thom
-      REAL (rprec), DIMENSION(nmse)             :: rstark
-      REAL (rprec), DIMENSION(nmse)             :: datastark
-      REAL (rprec), DIMENSION(nmse)             :: sigma_stark
-      REAL (rprec), DIMENSION(nfloops)          :: dsiobt
-      REAL (rprec), DIMENSION(nfloops)          :: sigma_flux
-      REAL (rprec), DIMENSION(nbcoilsp,nbsetsp) :: bbc
-      REAL (rprec), DIMENSION(nbcoilsp,nbsetsp) :: sigma_b
-      REAL (rprec), DIMENSION(ndatafmax)        :: psa
-      REAL (rprec), DIMENSION(ndatafmax)        :: pfa
-      REAL (rprec), DIMENSION(ndatafmax)        :: isa
-      REAL (rprec), DIMENSION(ndatafmax)        :: ifa
-      LOGICAL                                   :: lrecon
-      LOGICAL                                   :: ledge_dump
-      LOGICAL                                   :: lspectrum_dump
-      LOGICAL                                   :: loptim
-      LOGICAL                                   :: lpofr           !!Obsolete
-
-      CHARACTER(len=120) :: arg1
 
 !>  Extension for the namelist input file name.
       CHARACTER (len=long_name) :: input_extension
@@ -493,19 +363,16 @@
 !  Declare namelist
       NAMELIST /indata/                                                        &
 !  Control Parameters.
-     &   omp_num_threads, gamma, niter, niter_array, time_slice, nstep,        &
-     &   nvacskip, delt, ftol, ftol_array, tcon0,                              &
+     &   adiabatic, niter_array, nstep,                                        &
+     &   nvacskip, delt, ftol_array, tcon0,                                    &
 !  Precondicioner control parameters.
      &   precon_type, prec2d_threshold,                                        &
 !  Early termination control parameters.
      &   lgiveup, fgiveup,                                                     &
-!  Continue control parameters.
-     &   max_main_iterations,                                                  &
 !  Control flags.
-     &   lmove_axis, lmac, lforbal, lasym, lrfp, loldout, ldiagno,             &
-     &   lbsubs, lfull3d1out, lwouttxt, lnyquist,                              &
+     &   lmove_axis, lforbal, lasym, lbsubs,                                   &
 !  Radial parameters.
-     &   nsin, ns_array, aphi,                                                 &
+     &   ns_array, aphi,                                                       &
 !  Fourier sizes.
      &   mpol, ntor, nfp,                                                      &
 !  Real space grid sizes.
@@ -518,22 +385,10 @@
      &   piota_type, ai, ai_aux_s, ai_aux_f,                                   &
 !  Pressure profile parameters.
      &   pres_scale, pmass_type, am, am_aux_s, am_aux_f, spres_ped,            &
-!  Anisotropy parameters.
-     &   bcrit, at, ah,                                                        &
 !  Edge Boundary parameters.
      &   phiedge, rbc, rbs, zbs, zbc, mfilter_fbdy, nfilter_fbdy,              &
 !  Inital magnetic axis guess.
-     &   raxis_cc, raxis_cs, zaxis_cs, zaxis_cc, raxis, zaxis,                 &
-!  Unclassified.
-     &   sigma_current, psa, pfa, isa, ifa, imatch_phiedge, iopt_raxis,        &
-     &   tensi, tensp, mseangle_offset, mseangle_offsetm, imse,                &
-     &   isnodes, rstark, datastark, sigma_stark, itse, ipnodes,               &
-     &   presfac, pres_offset, rthom, datathom, sigma_thom, phidiam,           &
-     &   sigma_delphid, tensi2, fpolyi, nflxs, indxflx, dsiobt,                &
-     &   sigma_flux, nbfld, indxbfld, bbc, sigma_b, lpofr, lrecon,             &
-     &   ledge_dump, lspectrum_dump, loptim
-
-      NAMELIST /mseprofile/ mseprof
+     &   raxis_cc, raxis_cs, zaxis_cs, zaxis_cc
 
       CONTAINS
 
@@ -555,17 +410,14 @@
 !  Initializations
 
 !  Control Parameters.
-      omp_num_threads = 8
-      gamma = 0
+      adiabatic = 0
       niter_array = -1;
-      time_slice = 0
       niter = 100
       nstep = 10
       nvacskip = 1
       delt = 1
-      ftol = 1.E-10_dp
       ftol_array = 0
-      ftol_array(1) = ftol
+      ftol_array(1) = 1.E-10_dp
       tcon0 = 1
 
 !  Precondition Parameters.
@@ -578,26 +430,11 @@
 
 !  Control flags.
       lmove_axis = .true.
-      lmac = .false.
       lforbal = .false.        ! SPH: changed 05-14-14
       lasym = .false.
-      lrfp = .false.
-      loldout = .false.        ! J Geiger 2010-05-04 start
-      ldiagno = .false.
       lbsubs = .false.         ! J Hanson. See jxbforce coding
-      lfull3d1out = .true.     ! J Geiger & SPH (5-21-15)
-      lmoreiter = .false.      ! default value if no max_main_iterations given.
-      max_main_iterations = 1  ! to keep a presumably expected standard behavior.
-#if defined(NETCDF)
-      lwouttxt = .false.       ! to keep functionality as expected with netcdf
-#else
-      lwouttxt = .true.        ! and without netcdf
-#endif
-                               ! J Geiger 2010-05-04 end
-      lnyquist = .true.
 
 !  Radial grid size.
-      nsin = ns_default
       ns_array = 0
       ns_array(1) = ns_default
       aphi = 0
@@ -640,12 +477,6 @@
       am_aux_f = 0
       spres_ped = 1
 
-!  Anisotropy parameters
-      bcrit = 1
-      at(0) = 1
-      at(1:) = 0
-      ah = 0
-
 !  Edge boundary terms
       phiedge = 1
       rbc = 0
@@ -660,53 +491,9 @@
       zaxis_cs = 0
       raxis_cs = 0
       zaxis_cc = 0
-!  Backwards compatibility.
-      raxis = 0
-      zaxis = 0
       
       READ (iunit, nml=indata, iostat=istat)
 
-      IF (ALL(niter_array == -1)) THEN
-         niter_array = niter
-      END IF
-
-!  Work around a bug in gfortran. When performing an optimized build, the WHERE
-!  statement would produce incorrect results. Work around this bug by expanding
-!  the full WHERE statment. This should have no adverse effects on any other
-!  compiler since these statements are equivalent to the older code statement.
-!
-!     WHERE (raxis .ne. 0.0_dp) raxis_cc = raxis
-!     WHERE (zaxis .ne. 0.0_dp) zaxis_cs = zaxis
-!
-!  The effect of this bug optimized to code to effectively ignore the WHERE
-!  statement and assign all value values of the r/zaxis to the r/zaxis_cc/s
-!  arrays. Explicitly adding the r/zaxis .eq. 0.0_dp section prevents this. This
-!  bug is known to exist in gfortran 4.9. It may manifest in other versions.
-      WHERE (raxis .ne. 0.0_dp)
-         raxis_cc = raxis
-      ELSEWHERE
-         raxis_cc = raxis_cc
-      ENDWHERE
-      WHERE (zaxis .ne. 0.0_dp)
-         zaxis_cs = zaxis
-      ELSEWHERE
-         zaxis_cs = zaxis_cs
-      ENDWHERE
-
-      raxis_cs(0) = 0
-      zaxis_cs(0) = 0
-
-      IF (max_main_iterations .GT. 1) THEN
-         lmoreiter = .true.  !J Geiger: if more iterations are requested.
-      END IF
-
       END SUBROUTINE read_indata_namelist
-
-      SUBROUTINE read_mse_namelist (iunit, istat)
-      INTEGER :: iunit, istat
-
-      READ (iunit, nml=mseprofile, iostat=istat)
-
-      END SUBROUTINE
 
       END MODULE
