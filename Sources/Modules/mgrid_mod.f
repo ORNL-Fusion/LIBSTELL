@@ -111,10 +111,8 @@ C-----------------------------------------------
       INTEGER :: mpi_comm
 C-----------------------------------------------
 
-#if defined(MPI_OPT)
       mpi_comm = MPI_COMM_WORLD
       IF (PRESENT(comm)) mpi_comm = comm
-#endif
 
       mgrid_path = TRIM(mgrid_file)
 
@@ -158,15 +156,8 @@ C-----------------------------------------------
          ii = LEN_TRIM(mgrid_path) - 2
          lfind = (mgrid_path(ii:ii+2) == '.nc')
          IF (lfind) THEN
-#if defined(NETCDF)
             CALL read_mgrid_nc (mgrid_path, extcur, nv, nfp,
      1                          ier_flag, lscreen, comm)
-#else
-            lgrid_exist = .false.
-#endif
-         ELSE
-            CALL read_mgrid_bin (mgrid_path, extcur, nv, nfp,
-     1                          ier_flag, lscreen)
          END IF
 
 !SPH060517         IF (np0b .ne. nv) THEN
