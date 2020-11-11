@@ -805,7 +805,7 @@
 !>  @brief Print out a double precission real as a full precision int.
 !>
 !>  Use the equivalence statement to represent a real as an integer without type
-!>  conversion to intetger. This preserves the full binary represenation to
+!>  conversion to integer. This preserves the full binary represenation to
 !>  debug small differences in real numbers that a normal print statement may
 !>  miss.
 !-------------------------------------------------------------------------------

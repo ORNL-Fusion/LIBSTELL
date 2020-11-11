@@ -153,7 +153,7 @@
 !>    lasym = F,
 !>    lfreeb = F,
 !>
-!>    gamma = 0.0,
+!>    adiabatic = 0.0,
 !>    phiedge = -0.05,
 !>    bloat = 1.0,
 !>
@@ -491,7 +491,7 @@
       zaxis_cs = 0
       raxis_cs = 0
       zaxis_cc = 0
-      
+
       READ (iunit, nml=indata, iostat=istat)
 
       END SUBROUTINE read_indata_namelist

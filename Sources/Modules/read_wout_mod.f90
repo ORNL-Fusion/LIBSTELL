@@ -3,12 +3,12 @@
 !     USE READ_WOUT_MOD to include variables dynamically allocated
 !     in this module
 !     Call DEALLOCATE_READ_WOUT to free this memory when it is no longer needed
-! 
+!
 !     Reads in output from VMEC equilibrium code(s), contained in wout file
 !
 !     Contained subroutines:
 !
-!     read_wout_file      wrapper alias called to read/open wout file      
+!     read_wout_file      wrapper alias called to read/open wout file
 !     read_wout_text      called by read_wout_file to read text file wout
 !     read_wout_nc        called by read_wout_file to read netcdf file wout
 !
@@ -18,7 +18,7 @@
 !                         for the computed equilibrium
 !
 
-      USE vmec_input, ONLY: lrfp, lmove_axis, nbfld, long_name,                &
+      USE vmec_input, ONLY: lmove_axis, nbfld, long_name,                &
      &                      short_name
       USE mgrid_mod
 
@@ -30,7 +30,7 @@
 ! Variable names (vn_...) : put eventually into library, used by read_wout too...
       CHARACTER(LEN=*), PARAMETER :: vn_version = 'version_',           &
         vn_extension = 'input_extension', vn_mgrid = 'mgrid_file',      &
-        vn_magen = 'wb', vn_therm = 'wp', vn_gam = 'gamma',             &
+        vn_magen = 'wb', vn_therm = 'wp', vn_gam = 'adiabatic',         &
         vn_maxr = 'rmax_surf', vn_minr = 'rmin_surf',                   &
         vn_maxz = 'zmax_surf', vn_fp = 'nfp',                           &
         vn_radnod = 'ns', vn_polmod = 'mpol', vn_tormod = 'ntor',       &
@@ -97,7 +97,8 @@
       CHARACTER(LEN=*), PARAMETER :: ln_version = 'VMEC Version',       &
         ln_extension = 'Input file extension', ln_mgrid = 'MGRID file', &
         ln_magen = 'Magnetic Energy', ln_therm = 'Thermal Energy',      &
-        ln_gam = 'Gamma', ln_maxr = 'Maximum R', ln_minr = 'Minimum R', &
+        ln_gam = 'Adiabatic Constant', ln_maxr = 'Maximum R',           &
+        ln_minr = 'Minimum R', &
         ln_maxz = 'Maximum Z', ln_fp = 'Field Periods',                 &
         ln_radnod = 'Radial nodes', ln_polmod = 'Poloidal modes',       &
         ln_tormod = 'Toroidal modes', ln_maxmod = 'Fourier modes',      &
@@ -182,7 +183,7 @@
         ln_bsupumnc_sur = 'cosmn bsupu of B, surface',                  &
         ln_bsupvmnc_sur = 'cosmn bsupv of B, surface',                  &
 
-        ln_bsupumnc = 'BSUPUmnc half', ln_bsupvmnc = 'BSUPVmnc half',   & 
+        ln_bsupumnc = 'BSUPUmnc half', ln_bsupvmnc = 'BSUPVmnc half',   &
 
         ln_rmns = 'sinmn component of cylindrical R, full mesh',        &
         ln_zmnc = 'cosmn component of cylindrical Z, full mesh',        &
@@ -216,7 +217,7 @@
           iasym, ireconstruct, ierr_vmec, imse, itse, nstore_seq,       &
           isnodes, ipnodes, imatch_phiedge, isigng, mnyq, nnyq, ntmax,  &
           mnmaxpot
-      REAL(rprec) :: wb, wp, gamma, pfac, rmax_surf, rmin_surf,         &
+      REAL(rprec) :: wb, wp, adiabatic, pfac, rmax_surf, rmin_surf,     &
           zmax_surf, aspect, betatot, betapol, betator, betaxis, b0,    &
           tswgt, msewgt, flmwgt, bcwgt, phidiam, version_,              &
           delphid, IonLarmor, VolAvgB,                                  &
@@ -236,13 +237,13 @@
       REAL(rprec), DIMENSION(:), ALLOCATABLE ::                         &
          iotas, iotaf, presf, phipf, mass, pres, beta_vol, xm, xn,      &
          potsin, potcos, xmpot, xnpot, qfact, chipf, phi, chi,          &
-         xm_nyq, xn_nyq, phip, buco, bvco, vp, overr, jcuru, jcurv,     & 
-         specw, jdotb, bdotb, bdotgradv, fsqt, wdot, am, ac, ai,        & 
+         xm_nyq, xn_nyq, phip, buco, bvco, vp, overr, jcuru, jcurv,     &
+         specw, jdotb, bdotb, bdotgradv, fsqt, wdot, am, ac, ai,        &
          am_aux_s, am_aux_f, ac_aux_s, ac_aux_f, ai_aux_s, ai_aux_f,    &
          Dmerc, Dshear, Dwell, Dcurr, Dgeod, equif, extcur,             &
          sknots, ystark, y2stark, pknots, ythom, y2thom,                &
          anglemse, rmid, qmid, shear, presmid, alfa, curmid, rstark,    &
-         qmeas, datastark, rthom, datathom, dsiobt      
+         qmeas, datastark, rthom, datathom, dsiobt
       LOGICAL :: lasym, lthreed, lwout_opened=.false.
       CHARACTER (len=long_name) :: mgrid_file
       CHARACTER (len=long_name) :: input_extension
@@ -310,7 +311,7 @@
          IF (ierr .eq. 0) CALL read_wout_text(iunit, ierr)
          CLOSE(unit=iunit)
       END IF
-      
+
       IF (PRESENT(iopen)) iopen = ierr
       lwout_opened = (ierr .eq. 0)
       ! WHEN READING A NETCDF FILE, A BAD RUN MAY PREVENT XN FROM BEING
@@ -407,16 +408,16 @@
       ierr_vmec = norm_term_flag
 
       IF (version_ .le. (5.10 + eps_w)) THEN
-         READ (iunit, *, iostat=istat(2), err=1000) wb, wp, gamma,      &
+         READ (iunit, *, iostat=istat(2), err=1000) wb, wp, adiabatic,  &
             pfac, nfp, ns, mpol, ntor, mnmax, itfsq, niter, iasym,      &
             ireconstruct
       ELSE
          IF (version_ .lt. 6.54) THEN
-            READ (iunit, *, iostat=istat(2), err=1000) wb, wp, gamma,   &
-              pfac, rmax_surf, rmin_surf
+            READ (iunit, *, iostat=istat(2), err=1000) wb, wp,          &
+               adiabatic, pfac, rmax_surf, rmin_surf
          ELSE
-            READ (iunit, *, iostat=istat(2), err=1000) wb, wp, gamma,   &
-               pfac, rmax_surf, rmin_surf, zmax_surf
+            READ (iunit, *, iostat=istat(2), err=1000) wb, wp,          &
+               adiabatic, pfac, rmax_surf, rmin_surf, zmax_surf
          END IF
          IF (version_ .le. (8.0+eps_w)) THEN
             READ (iunit, *, iostat=istat(2), err=1000) nfp, ns, mpol,   &
@@ -563,7 +564,7 @@
       mnyq = INT(MAXVAL(xm_nyq));  nnyq = INT(MAXVAL(ABS(xn_nyq)))/nfp
 
 !
-!     Read FULL AND HALF-MESH QUANTITIES 
+!     Read FULL AND HALF-MESH QUANTITIES
 !
 !     NOTE: In version_ <= 6.00, mass, press were written out in INTERNAL (VMEC) units
 !     and are therefore multiplied here by 1/mu0 to transform to pascals. Same is true
@@ -571,7 +572,7 @@
 !     above, PHI is the true (physical) toroidal flux (has the sign of jacobian correctly
 !     built into it)
 !
-      iotas(1) = 0; mass(1) = 0; pres(1) = 0; phip(1) = 0; 
+      iotas(1) = 0; mass(1) = 0; pres(1) = 0; phip(1) = 0;
       buco(1) = 0; bvco(1) = 0; vp(1) = 0; overr(1) = 0;  specw(1) = 1
       beta_vol(1) = 0
 
@@ -651,7 +652,7 @@
       END IF
 
       IF ((version_.ge.6.20-eps_w) .and. (version_ .lt. (6.50-eps_w))   &
-         .and. (istat(14).eq.0)) THEN  
+         .and. (istat(14).eq.0)) THEN
          READ (iunit, 730, iostat=istat(14), err=1000)                  &
            (jdotb(js), bdotgradv(js), bdotb(js), js=1,ns)
       ELSE IF (version_ .ge. (6.50-eps_w)) THEN
@@ -799,7 +800,7 @@
 
 ! Read in scalar variables
       CALL cdf_read(nwout, vn_error, ierr_vmec)
-      
+
       IF (ierr_vmec.ne.norm_term_flag .and.                             &
           ierr_vmec.ne.more_iter_flag) GOTO 1000
 
@@ -808,7 +809,7 @@
       CALL cdf_read(nwout, vn_mgrid, mgrid_file)
       CALL cdf_read(nwout, vn_magen, wb)
       CALL cdf_read(nwout, vn_therm, wp)
-      CALL cdf_read(nwout, vn_gam, gamma)
+      CALL cdf_read(nwout, vn_gam, adiabatic)
       CALL cdf_read(nwout, vn_maxr, rmax_surf)
       CALL cdf_read(nwout, vn_minr, rmin_surf)
       CALL cdf_read(nwout, vn_maxz, zmax_surf)
@@ -898,7 +899,7 @@
       CALL cdf_inquire(nwout, vn_zacs, dimlens)
       ALLOCATE (zaxis_cs(0:dimlens(1)-1), stat = ierror)
       IF (lasym) THEN
-         CALL cdf_inquire(nwout, vn_racs, dimlens) 
+         CALL cdf_inquire(nwout, vn_racs, dimlens)
          ALLOCATE (raxis_cs(0:dimlens(1)-1), stat = ierror)
          CALL cdf_inquire(nwout, vn_zacc, dimlens)
          ALLOCATE (zaxis_cc(0:dimlens(1)-1), stat = ierror)
@@ -911,7 +912,7 @@
       ALLOCATE (ac(0:dimlens(1)-1), stat = ierror)
       CALL cdf_inquire(nwout, vn_ai, dimlens)
       ALLOCATE (ai(0:dimlens(1)-1), stat = ierror)
-      
+
       CALL cdf_inquire(nwout, vn_ac_aux_s, dimlens)
       ALLOCATE (ac_aux_s(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_ac_aux_f, dimlens)
@@ -924,14 +925,14 @@
       ALLOCATE (am_aux_s(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_am_aux_f, dimlens)
       ALLOCATE (am_aux_f(dimlens(1)), stat = ierror)
-      
+
       CALL cdf_inquire(nwout, vn_iotaf, dimlens)
       ALLOCATE (iotaf(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_qfact, dimlens)
 
       ALLOCATE (qfact(dimlens(1)), stat = ierror)
 
-      CALL cdf_inquire(nwout, vn_presf, dimlens) 
+      CALL cdf_inquire(nwout, vn_presf, dimlens)
       ALLOCATE (presf(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_phi, dimlens)
       ALLOCATE (phi(dimlens(1)), stat = ierror)
@@ -951,19 +952,19 @@
       ALLOCATE (jcurv(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_iotah, dimlens)
       ALLOCATE (iotas(dimlens(1)), stat = ierror)
-      CALL cdf_inquire(nwout, vn_mass, dimlens) 
+      CALL cdf_inquire(nwout, vn_mass, dimlens)
       ALLOCATE (mass(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_presh, dimlens)
       ALLOCATE (pres(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_betah, dimlens)
       ALLOCATE (beta_vol(dimlens(1)), stat = ierror)
-      CALL cdf_inquire(nwout, vn_buco, dimlens) 
+      CALL cdf_inquire(nwout, vn_buco, dimlens)
       ALLOCATE (buco(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_bvco, dimlens)
       ALLOCATE (bvco(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_vp, dimlens)
       ALLOCATE (vp(dimlens(1)), stat = ierror)
-      CALL cdf_inquire(nwout, vn_specw, dimlens) 
+      CALL cdf_inquire(nwout, vn_specw, dimlens)
       ALLOCATE (specw(dimlens(1)), stat = ierror)
       CALL cdf_inquire(nwout, vn_phip, dimlens)
       ALLOCATE (phip(dimlens(1)), stat = ierror)
@@ -998,7 +999,7 @@
       IF (nextcur .gt. 0) THEN
          CALL cdf_inquire(nwout, vn_extcur, dimlens)
          ALLOCATE (extcur(dimlens(1)), stat = ierror)
-!NOTE: curlabel is an array of CHARACTER(30) strings - defined in mgrid_mod 
+!NOTE: curlabel is an array of CHARACTER(30) strings - defined in mgrid_mod
 !      so dimlens(1) == 30 (check this) and dimlens(2) is the number of strings in the array
          CALL cdf_inquire(nwout, vn_curlab, dimlens)
          ALLOCATE (curlabel(dimlens(2)), stat = ierror)
@@ -1109,7 +1110,7 @@
       mnyq = INT(MAXVAL(xm_nyq));  nnyq = INT(MAXVAL(ABS(xn_nyq)))/nfp
 
       CALL cdf_read(nwout, vn_racc, raxis_cc)
-      CALL cdf_read(nwout, vn_zacs, zaxis_cs) 
+      CALL cdf_read(nwout, vn_zacs, zaxis_cs)
 
       IF (SIZE(raxis_cc) .ne. ntor+1)                                   &
          STOP 'WRONG SIZE(raxis_cc) in READ_WOUT_NC'
@@ -1144,14 +1145,14 @@
 
       IF (lasym) THEN
          CALL cdf_read(nwout, vn_racs, raxis_cs)
-         CALL cdf_read(nwout, vn_zacc, zaxis_cc) 
+         CALL cdf_read(nwout, vn_zacc, zaxis_cc)
          raxis(:,2) = raxis_cs;   zaxis(:,2) = zaxis_cc
          DEALLOCATE (raxis_cs, zaxis_cc, stat=ierror)
          CALL cdf_read(nwout, vn_rmns, rmns)
          CALL cdf_read(nwout, vn_zmnc, zmnc)
          CALL cdf_read(nwout, vn_lmnc, lmnc)
          CALL cdf_read(nwout, vn_gmns, gmns)
-         CALL cdf_read(nwout, vn_bmns, bmns) 
+         CALL cdf_read(nwout, vn_bmns, bmns)
          CALL cdf_read(nwout, vn_bsubumns, bsubumns)
          CALL cdf_read(nwout, vn_bsubvmns, bsubvmns)
          CALL cdf_read(nwout, vn_bsubsmnc, bsubsmnc)
@@ -1175,7 +1176,7 @@
       CALL cdf_read(nwout, vn_am, am)
       CALL cdf_read(nwout, vn_ac, ac)
       CALL cdf_read(nwout, vn_ai, ai)
-      
+
       CALL cdf_read(nwout, vn_am_aux_s, am_aux_s)
       CALL cdf_read(nwout, vn_am_aux_f, am_aux_f)
       CALL cdf_read(nwout, vn_ac_aux_s, ac_aux_s)
@@ -1183,13 +1184,13 @@
       CALL cdf_read(nwout, vn_ai_aux_s, ai_aux_s)
       CALL cdf_read(nwout, vn_ai_aux_f, ai_aux_f)
 
-      CALL cdf_read(nwout, vn_iotaf, iotaf) 
-      CALL cdf_read(nwout, vn_qfact, qfact) 
+      CALL cdf_read(nwout, vn_iotaf, iotaf)
+      CALL cdf_read(nwout, vn_qfact, qfact)
 
-      CALL cdf_read(nwout, vn_presf, presf) 
-      CALL cdf_read(nwout, vn_phi, phi) 
+      CALL cdf_read(nwout, vn_presf, presf)
+      CALL cdf_read(nwout, vn_phi, phi)
       CALL cdf_read(nwout, vn_phipf, phipf)
-      CALL cdf_read(nwout, vn_chi, chi) 
+      CALL cdf_read(nwout, vn_chi, chi)
 
       CALL cdf_read(nwout, vn_chipf, chipf)
       IF (ALL(chipf .EQ. 1.E30_dp)) THEN
@@ -1198,16 +1199,16 @@
 
       CALL cdf_read(nwout, vn_jcuru, jcuru)
       CALL cdf_read(nwout, vn_jcurv, jcurv)
- 
+
 !     HALF-MESH quantities
 !     NOTE: jdotb is in units_of_A (1/mu0 incorporated in jxbforce...)
 !     prior to version 6.00, this was output in internal VMEC units...
       CALL cdf_read(nwout, vn_iotah, iotas)
-      CALL cdf_read(nwout, vn_mass, mass) 
+      CALL cdf_read(nwout, vn_mass, mass)
       CALL cdf_read(nwout, vn_presh, pres)
       CALL cdf_read(nwout, vn_betah, beta_vol)
       CALL cdf_read(nwout, vn_buco, buco)
-      CALL cdf_read(nwout, vn_bvco, bvco) 
+      CALL cdf_read(nwout, vn_bvco, bvco)
       CALL cdf_read(nwout, vn_vp, vp)
       CALL cdf_read(nwout, vn_specw, specw)
       CALL cdf_read(nwout, vn_phip, phip)
@@ -1225,7 +1226,7 @@
 
       CALL cdf_read(nwout, vn_fsq, fsqt)
       CALL cdf_read(nwout, vn_wdot, wdot)
-     
+
       IF (nextcur .gt. 0) THEN
          CALL cdf_read(nwout, vn_extcur, extcur)
          CALL cdf_read(nwout, vn_curlab, curlabel)
@@ -1237,7 +1238,7 @@
 
       IF (.not.ALLOCATED(bsubumnc)) RETURN                              !Moved this here because ns may not be set. SAL -09/07/11
 !
-!     COMPUTE CONTRAVARIANT CURRENT COMPONENTS IN AMPS 
+!     COMPUTE CONTRAVARIANT CURRENT COMPONENTS IN AMPS
 !     ON THE FULL RADIAL MESH, WHERE JACOBIAN = SQRT(G)
 !
 !     CURRU = SQRT(G) * J dot grad(u)
@@ -1283,8 +1284,8 @@
       LOGICAL              :: lcurr
 !------------------------------------------------
 !
-!     THIS SUBROUTINE WRITES A TEXT FILE WOUT CREATED BY STORED THE INFORMATION 
-!     IN THE read_WOUT MODULE. This routine can only be called if the wout has 
+!     THIS SUBROUTINE WRITES A TEXT FILE WOUT CREATED BY STORED THE INFORMATION
+!     IN THE read_WOUT MODULE. This routine can only be called if the wout has
 !     already been read in.
 
       iounit = 0
@@ -1308,13 +1309,13 @@
       END IF
 
       IF (version_ .le. (5.10 + eps_w)) THEN
-         WRITE (iounit, *) wb, wp, gamma, pfac, nfp, ns, mpol, ntor,           &
+         WRITE (iounit, *) wb, wp, adiabatic, pfac, nfp, ns, mpol, ntor,       &
      &      mnmax, itfsq, niter, iasymm, ireconstruct
       ELSE
          IF (version_ .lt. 6.54) THEN
-            WRITE (iounit, *) wb, wp, gamma, pfac, rmax_surf, rmin_surf
+            WRITE (iounit, *) wb, wp, adiabatic, pfac, rmax_surf, rmin_surf
          ELSE
-            WRITE (iounit, *) wb, wp, gamma, pfac, rmax_surf, rmin_surf,       &
+            WRITE (iounit, *) wb, wp, adiabatic, pfac, rmax_surf, rmin_surf,   &
      &                        zmax_surf
          END IF
          IF (version_ .le. (8.0 + eps_w)) THEN
@@ -1627,8 +1628,8 @@
          ENDWHERE
          currumnc_(:,js) = -xn_nyq_(:)*t1 - t3
          currvmnc_(:,js) = -xm_nyq_(:)*t1 + t2
-      END DO         
-   
+      END DO
+
       WHERE (xm_nyq_ .LE. 1)
          currvmnc_(:,1) =  2*currvmnc_(:,2) - currvmnc_(:,3)
          currumnc_(:,1) =  2*currumnc_(:,2) - currumnc_(:,3)
@@ -1660,7 +1661,7 @@
          END WHERE
          currumns_(:,js) =  xn_nyq_(:)*t1 - t3
          currvmns_(:,js) =  xm_nyq_(:)*t1 + t2
-      END DO         
+      END DO
 
       WHERE (xm_nyq_ .LE. 1)
          currvmns_(:,1) =  2*currvmns_(:,2) - currvmns_(:,3)
@@ -1696,14 +1697,14 @@
         pres, beta_vol, phip, buco, bvco, phi, vp, jcuru, am, ac, ai,   &
         jcurv, specw, Dmerc, Dshear, Dwell, Dcurr, Dgeod, equif, jdotb, &
         bdotb, bdotgradv, raxis, zaxis, fsqt, wdot, stat=istat(3))
- 
+
       IF (ALLOCATED(potsin)) DEALLOCATE (potsin)
       IF (ALLOCATED(potcos)) DEALLOCATE (potcos)
 
       IF (ALLOCATED(chipf)) DEALLOCATE (chipf, chi)
 
       IF (ALLOCATED(am_aux_s)) DEALLOCATE (am_aux_s, am_aux_f,          &
-          ac_aux_s, ac_aux_f, ai_aux_s, ai_aux_f, stat=istat(6)) 
+          ac_aux_s, ac_aux_f, ai_aux_s, ai_aux_f, stat=istat(6))
 
       IF (ireconstruct.gt.0 .and. ALLOCATED(sknots)) DEALLOCATE (       &
           ystark, y2stark, pknots, anglemse, rmid, qmid, shear,         &
@@ -1761,14 +1762,14 @@
 !------------------------------------------------
 !
 !     COMPUTE VARIOUS HALF/FULL-RADIAL GRID QUANTITIES AT THE INPUT POINT
-!     (S, U, V) , WHERE 
+!     (S, U, V) , WHERE
 !        S = normalized toroidal flux (0 - 1),
-!        U = poloidal angle 
+!        U = poloidal angle
 !        V = N*phi = toroidal angle * no. field periods
 !
 !     HALF-RADIAL GRID QUANTITIES
 !     gsqrt, bsupu, bsupv
-!   
+!
 !     FULL-RADIAL GRID QUANTITIES
 !     dbsubuds, dbsubvds, dbsubsdu, dbsubsdv
 !
@@ -1814,7 +1815,7 @@
       whi = 1 - wlo
       IF (jslo .eq. ns) THEN
 !        USE Xhalf(ns+1) = 2*Xhalf(ns) - Xhalf(ns-1) FOR "GHOST" POINT VALUE 1/2hs OUTSIDE EDGE
-!        THEN, X = wlo*Xhalf(ns) + whi*Xhalf(ns+1) == Xhalf(ns) + whi*(Xhalf(ns) - Xhalf(ns-1)) 
+!        THEN, X = wlo*Xhalf(ns) + whi*Xhalf(ns+1) == Xhalf(ns) + whi*(Xhalf(ns) - Xhalf(ns-1))
          jshi = jslo-1
          wlo = 1+whi; whi = -whi
       ELSE IF (jslo .eq. 1) THEN
@@ -1823,7 +1824,7 @@
 
 !
 !     FOR ODD-m MODES X ~ SQRT(s), SO INTERPOLATE Xmn/SQRT(s)
-! 
+!
       whi_odd = whi*SQRT(s_in/(hs1*(jshi-c1p5)))
       IF (jslo .ne. 1) THEN
          wlo_odd = wlo*SQRT(s_in/(hs1*(jslo-c1p5)))
@@ -1869,7 +1870,7 @@
       DO mn = 1, mnmax_nyq
          m = NINT(xm_nyq(mn));  n = NINT(xn_nyq(mn))/nfp
          n1 = ABS(n);   sgn = SIGN(1,n)
-         tcosmn = cosmu(m)*cosnv(n1) + sgn*sinmu(m)*sinnv(n1)   
+         tcosmn = cosmu(m)*cosnv(n1) + sgn*sinmu(m)*sinnv(n1)
          IF (lgsqrt) gsqrt = gsqrt + gmnc1(mn)*tcosmn
          IF (lbsupu) bsupu = bsupu + bsupumnc1(mn)*tcosmn
          IF (lbsupv) bsupv = bsupv + bsupvmnc1(mn)*tcosmn
@@ -1902,7 +1903,7 @@
       whi = 1 - wlo
 !
 !     FOR ODD-m MODES X ~ SQRT(s), SO INTERPOLATE Xmn/SQRT(s)
-! 
+!
       whi_odd = whi*SQRT(s_in/(hs1*(jshi-1)))
       IF (jslo .ne. 1) THEN
          wlo_odd = wlo*SQRT(s_in/(hs1*(jslo-1)))
@@ -1941,7 +1942,7 @@
       DO mn = 1, mnmax_nyq
          m = NINT(xm_nyq(mn));  n = NINT(xn_nyq(mn))/nfp
          n1 = ABS(n);   sgn = SIGN(1,n)
-         tcosmn = cosmu(m)*cosnv(n1) + sgn*sinmu(m)*sinnv(n1)   
+         tcosmn = cosmu(m)*cosnv(n1) + sgn*sinmu(m)*sinnv(n1)
          IF (ljsupu) jsupu = jsupu + jsupumnc1(mn)*tcosmn
          IF (ljsupv) jsupv = jsupv + jsupvmnc1(mn)*tcosmn
       END DO
@@ -1976,7 +1977,7 @@
 !     Arrays must be stacked (and ns,ntor,mpol ordering imposed)
 !     as coefficients of cos(mu)*cos(nv), etc
 !     Only need R, Z components(not lambda, for now anyhow)
-!      
+!
       IF (ALLOCATED(rzl_local)) RETURN
 
       mpol1 = mpol-1
