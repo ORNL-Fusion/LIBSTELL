@@ -197,7 +197,7 @@
 !>  @ref vmec_namelist_sec "VMEC namelist indata definition"
 !*******************************************************************************
       MODULE vmec_input
-      USE vparams, ONLY: rprec, dp, mpol1d, ntord, ndatafmax
+      USE vparams, ONLY: rprec, dp, mpol1d, ntord, ndatafmax, nigroup
 
       IMPLICIT NONE
 
