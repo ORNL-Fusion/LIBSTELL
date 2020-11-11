@@ -1,6 +1,5 @@
       SUBROUTINE read_namelist(iunit, io_stat, lc_name)
-      USE vmec_input, ONLY: read_indata_namelist,                       &
-                            read_mse_namelist
+      USE vmec_input, ONLY: read_indata_namelist
       USE vmec_seq, ONLY: vseq
       USE bootsj_input, ONLY: read_boot_namelist
       USE optim_params, ONLY: read_optimum_namelist, lprof_opt,         &
@@ -38,10 +37,6 @@
       IF (lcurprof_opt) lprof_opt = .true.
       ELSE IF (namelc(1:ifind) .eq. '&bootin') THEN
          CALL read_boot_namelist (iunit, io_stat)
-      ELSE IF (namelc(1:ifind) .eq. '&mseprofile') THEN
-         CALL read_mse_namelist (iunit, io_stat)
-      ELSE IF (namelc(1:ifind) .eq. '&vseq') THEN
-         READ (iunit, nml=vseq, iostat=io_stat)
       ELSE IF (namelc(1:ifind) .eq. '&coilsin') THEN
          CALL read_coils_namelist (iunit, io_stat)
       ELSE IF (namelc(1:ifind) .eq. '&ga_de') THEN
