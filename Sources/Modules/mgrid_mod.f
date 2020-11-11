@@ -2,27 +2,26 @@
       USE v3_utilities
       USE stel_kinds
       USE vmec_input, ONLY: nbfld, nflxs, lfreeb, lrecon
-      USE vsvd0, ONLY: nigroup, nparts, npfcoil, nbcoilsp, nfloops,
-     1                 nbctotp
+      USE vparams, ONLY: nigroup
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: nlimset = 2       !number of different limiters
-      CHARACTER(LEN=*), PARAMETER :: 
+      CHARACTER(LEN=*), PARAMETER ::
      1   vn_br0 = 'br', vn_bp0 = 'bp', vn_bz0 = 'bz',
      2   vn_ar0 = 'ar', vn_ap0 = 'ap', vn_az0 = 'az',
      3   vn_ir = 'ir', vn_jz = 'jz',
      4   vn_kp = 'kp', vn_nfp = 'nfp',
-     5   vn_rmin='rmin', vn_rmax='rmax', vn_zmin='zmin', 
-     6   vn_zmax='zmax', vn_coilgrp='coil_group' 
+     5   vn_rmin='rmin', vn_rmax='rmax', vn_zmin='zmin',
+     6   vn_zmax='zmax', vn_coilgrp='coil_group'
       CHARACTER(LEN=*), PARAMETER ::
-     1  vn_nextcur = 'nextcur',  vn_mgmode='mgrid_mode', 
+     1  vn_nextcur = 'nextcur',  vn_mgmode='mgrid_mode',
      2  vn_coilcur = 'raw_coil_cur',
-     3  vn_flp = 'nobser', vn_nobd = 'nobd', vn_nbset = 'nbsets', 
+     3  vn_flp = 'nobser', vn_nobd = 'nobd', vn_nbset = 'nbsets',
      4  vn_nbfld = 'nbfld',
      2  ln_flp = 'flux loops', ln_nobd = 'Connected flux loops',
      3  ln_nbset = 'B-coil loops', ln_next = 'External currents',
      4  ln_nbfld = 'B-coil measurements'
- 
+
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
@@ -41,40 +40,6 @@ C-----------------------------------------------
 !     curlabel:   array of labels describing each current group
 !                     included in green''s FUNCTION BFIELD response
 !
-!               - - - - - - - - - - - - - - - - - -
-!               FOR DIAGNOSTICS AND DATA ANALYSIS
-!               (HERE,COILS ARE FOR MEASURING FIELDS, FLUXES)
-!    iconnect:   two-dimensional array describing electrical
-!     needflx:    =NEEDIT, loop required for flux match
-!                    >=ISYMCOIL, loop required but flux computed by
-!                               invoking symmetry in Z
-!                    =IDONTNEED, loop not required for flux match
-!    needbfld:    =NEEDIT, loop required for B-field match
-!                    =ISAMECOIL, loop at same position as previous loop
-!                    >=ISYMCOIL, loop required but B-field computed
-!                               by invoking symmetry in Z
-!                    =IDONTNEED, loop not required in B-field match
-!      dsiext:    connected flux loop signals due to EXTERNAL coils
-!      plflux:    array of measured (inferred) plasma contrib. to flux loops
-!      plbfld:    array of measured (inferred) plasma contrib. to B-loops
-!                      connection of up to four flux loops. Specifies
-!                     the sign and flux loop number of (up to) four
-!                     connected individual loops (indexing based on
-!                     xobser,zobser arrays).
-!        nobd:   number of connected flux loop measurements
-!      nobser:   number of individual flux loop positions
-!      nbsets:   number of B-coil sets defined in mgrid file
-!  nbcoils(n):   number of bfield coils in each set defined in mgrid file
-!    nbcoilsn:   total number of bfield coils defined in mgrid file
-!      nbfldn:   total number of EXTERNAL bfield measurements used in matching
-!  bloopnames:   array of labels describing b-field sets
-!    dsilabel:   array of labels describing connected flux loops
-!      xobser:   array of flux loop R-positions
-!      zobser:   array of flux loop Z-positions
-! rbcoil(m,n):   R position of the m-th coil in the n-th set from mgrid file
-! zbcoil(m,n):   Z position of the m-th coil in the n-th set from mgrid file
-! abcoil(m,n):   orientation (surface normal wrt R axis; in radians)
-!
       INTEGER :: nr0b, np0b, nfper0, nz0b
       INTEGER :: nobd, nobser, nextcur, nbfldn, nbsets, nbcoilsn
       INTEGER :: nbvac, nbcoil_max, nlim, nlim_max, nsets,
@@ -86,7 +51,7 @@ C-----------------------------------------------
       REAL(rprec) ::rx1, rx2, zy1, zy2, condif
       REAL(rprec), DIMENSION(:,:), ALLOCATABLE, TARGET :: bvac
       REAL(rprec), DIMENSION(:,:,:), POINTER :: brvac, bzvac, bpvac
-      REAL(rprec), DIMENSION(:,:), ALLOCATABLE :: unpsiext, 
+      REAL(rprec), DIMENSION(:,:), ALLOCATABLE :: unpsiext,
      1   plbfld, rbcoil, zbcoil, abcoil, bcoil, rbcoilsqr
       REAL(rprec), DIMENSION(:), ALLOCATABLE :: raw_coil_current
       REAL(rprec), DIMENSION(:), ALLOCATABLE :: xobser, zobser,
@@ -94,11 +59,11 @@ C-----------------------------------------------
       CHARACTER(LEN=300) :: mgrid_path
       CHARACTER(LEN=300) :: mgrid_path_old = " "
       CHARACTER(LEN=30), DIMENSION(:), ALLOCATABLE :: curlabel
-      CHARACTER(LEN=15), DIMENSION(:), ALLOCATABLE :: 
+      CHARACTER(LEN=15), DIMENSION(:), ALLOCATABLE ::
      1                                           dsilabel, bloopnames
       CHARACTER(LEN=30) :: tokid
       REAL(rprec), DIMENSION(:,:,:), ALLOCATABLE :: dbcoil, pfcspec
-      REAL(rprec), DIMENSION(:,:), ALLOCATABLE :: 
+      REAL(rprec), DIMENSION(:,:), ALLOCATABLE ::
      1    rlim, zlim, reslim, seplim
       CHARACTER(LEN=1) :: mgrid_mode
 
@@ -107,10 +72,10 @@ C-----------------------------------------------
 #else
       PRIVATE :: read_mgrid_bin
 #endif
-      
+
       CONTAINS
 
-      SUBROUTINE read_mgrid (mgrid_file, extcur, nv, nfp, lscreen, 
+      SUBROUTINE read_mgrid (mgrid_file, extcur, nv, nfp, lscreen,
      1                       ier_flag, comm)
       USE system_mod
       USE mpi_inc
@@ -118,7 +83,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   D u m m y   V a r i a b l e s
 C-----------------------------------------------
-!     
+!
 !     mgrid_file:     full path to mgrid file
 !     lscreen   :     logical controlling output to screen
 !     ier_flag  ;     error flag returned to caller
@@ -158,7 +123,7 @@ C-----------------------------------------------
 
       mgrid_path = TRIM(mgrid_file)
 
-      IF ((mgrid_path .eq. TRIM(mgrid_path_old)) .and. 
+      IF ((mgrid_path .eq. TRIM(mgrid_path_old)) .and.
      1     ALLOCATED(curlabel)) THEN
          PRINT *,' mgrid file previously parsed!'
          RETURN
@@ -194,12 +159,12 @@ C-----------------------------------------------
      1     'Opening vacuum field file: ', TRIM(mgrid_file)
 !
 !        Parse mgrid file name, look for .nc extension (netcdf format)
-! 
+!
          ii = LEN_TRIM(mgrid_path) - 2
          lfind = (mgrid_path(ii:ii+2) == '.nc')
          IF (lfind) THEN
 #if defined(NETCDF)
-            CALL read_mgrid_nc (mgrid_path, extcur, nv, nfp, 
+            CALL read_mgrid_nc (mgrid_path, extcur, nv, nfp,
      1                          ier_flag, lscreen, comm)
 #else
             lgrid_exist = .false.
@@ -221,7 +186,7 @@ C-----------------------------------------------
          END IF
 
       END IF
-      
+
       IF (ier_flag .ne. 0) RETURN
 
       IF (.not.lgrid_exist .or. ier_flag.ne.0) THEN
@@ -239,8 +204,8 @@ C-----------------------------------------------
 
       END SUBROUTINE read_mgrid
 
-      
-      SUBROUTINE read_mgrid_bin (filename, extcur, nv, nfp, ier_flag, 
+
+      SUBROUTINE read_mgrid_bin (filename, extcur, nv, nfp, ier_flag,
      1                           lscreen)
       USE safe_open_mod
       IMPLICIT NONE
@@ -256,7 +221,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
-      REAL(rprec), DIMENSION(:,:,:), ALLOCATABLE :: 
+      REAL(rprec), DIMENSION(:,:,:), ALLOCATABLE ::
      1           brtemp, bztemp, bptemp
       INTEGER :: ier_flag, iunit = 50
       INTEGER :: istat, ig, i, j, n, n1, m, nsets_max, k
@@ -323,12 +288,12 @@ C-----------------------------------------------
             READ(iunit, iostat=istat) brtemp, bptemp, bztemp
          ELSE
             READ(iunit, iostat=istat) (((brtemp(i,j,k), bztemp(i,j,k),
-     1                                   bptemp(i,j,k), i= 1,nr0b), 
+     1                                   bptemp(i,j,k), i= 1,nr0b),
      2                                   j=1,nz0b), k=1,np0b)
          END IF
 !
 !        STORE SUMMED BFIELD (OVER COIL GROUPS) IN BVAC
-!         
+!
          CALL sum_bfield(bvac(1,1), brtemp, extcur(ig), nv)
          CALL sum_bfield(bvac(1,2), bptemp, extcur(ig), nv)
          CALL sum_bfield(bvac(1,3), bztemp, extcur(ig), nv)
@@ -633,7 +598,7 @@ C-----------------------------------------------
       END IF
 !THIS IS A GLITCH WITH cdf_read: must distinguish 1D char array from multi-D
       IF (nextcur .eq. 1) THEN
-         IF (istat .eq. 0) 
+         IF (istat .eq. 0)
      1     CALL cdf_read(ngrid, vn_coilgrp, curlabel(1))
       ELSE IF (istat .eq. 0) THEN
            CALL cdf_read(ngrid, vn_coilgrp, curlabel(1:nextcur))
@@ -752,8 +717,8 @@ C-----------------------------------------------
       END SUBROUTINE assign_bptrs
 
       SUBROUTINE free_mgrid (istat)
-      INTEGER :: istat 
-     
+      INTEGER :: istat
+
       istat = 0
 
       IF (ALLOCATED(bvac)) DEALLOCATE (bvac,stat=istat)
@@ -766,9 +731,9 @@ C-----------------------------------------------
 
       IF (ALLOCATED(rlim))
      1   DEALLOCATE (rlim,zlim, reslim,seplim,stat=istat)
-     
+
 !  Reset mgrid_path_old, so that can reread an mgrid file. SL, JDH 2012-07-16
-      mgrid_path_old = " "     
+      mgrid_path_old = " "
 
       END SUBROUTINE free_mgrid
 

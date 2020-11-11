@@ -1260,7 +1260,6 @@
 
       SUBROUTINE write_wout_text(filename, ierr)
       USE v3_utilities
-      USE vsvd0, ONLY: nparts
       USE safe_open_mod
       USE stel_constants, ONLY: mu0
 
@@ -1485,59 +1484,6 @@
          WRITE (iounit, 730) (jdotb(js), bdotgradv(js), js=1, ns)
       ELSE IF (version_ .ge. (6.50 - eps_w)) THEN
          WRITE (iounit, *) (jdotb(js), bdotgradv(js), js=1, ns)
-      END IF
-
-!-----------------------------------------------
-!     DATA AND MSE FITS
-!-----------------------------------------------
-      IF (ireconstruct .gt. 0) THEN
-         IF (imse .ge. 2 .or. itse .gt. 0) THEN
-            WRITE (iounit, *) tswgt, msewgt
-            WRITE (iounit, *) isnodes, (sknots(js), ystark(js),                &
-     &                                  y2stark(js), js=1, isnodes)
-            WRITE (iounit, *) ipnodes, (pknots(js), ythom(js),                 &
-     &                                  y2thom(js), js=1, ipnodes)
-            WRITE (iounit, *) (anglemse(js), rmid(js), qmid(js),               &
-     &                         shear(js), presmid(js), alfa(js),               &
-     &                         curmid(js), js=1, 2*ns - 1)
-            WRITE (iounit, *) (rstark(js), datastark(js), qmeas(js),           &
-     &                         js=1, imse)
-            WRITE (iounit, *) (rthom(js), datathom(i), js=1, itse)
-         END IF
-
-         IF (nobd .gt. 0) THEN
-            WRITE (iounit, *) (dsiext(js), plflux(js), dsiobt(js),             &
-     &                         js=1, nobd)
-            WRITE (iounit, *) flmwgt
-         END IF
-
-         IF (nbfldn .gt. 0) THEN
-            DO n = 1, nbsets
-               READ (iounit, *) (bcoil(i,n), plbfld(i,n), bbc(i,n),            &
-     &                           i=1,nbfld(n))
-            END DO
-            WRITE (iounit, *) bcwgt
-         END IF
-
-         WRITE (iounit, *) phidiam, delphid
-!
-!     READ Limiter & Prout plotting specs
-!
-         WRITE (iounit, *) nsets, nparts, nlim
-
-         WRITE (iounit, *) (nsetsn(js), js=1, nsets)
-
-         WRITE (iounit, *) (((pfcspec(i,j,k), i=1, nparts),                    &
-     &                       j=1, nsetsn(k)), k=1, nsets)
-
-         WRITE (iounit, *) (limitr(i), i=1, nlim)
-
-         WRITE (iounit, *) ((rlim(i,j), zlim(i,j), i=1, limitr(j)),            &
-     &                      j=1, nlim)
-         WRITE (iounit, *) nrgrid, nzgrid
-         WRITE (iounit, *) tokid
-         WRITE (iounit, *) rx1, rx2, zy1, zy2, condif
-         WRITE (iounit, *) imatch_phiedge
       END IF
 
 1000  CONTINUE

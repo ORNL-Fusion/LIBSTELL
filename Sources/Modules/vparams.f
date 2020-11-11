@@ -15,6 +15,8 @@
       INTEGER, PARAMETER :: ndatafmax  = nsd
       INTEGER, PARAMETER :: nstore_seq = 100
 
+      INTEGER, PARAMETER :: nigroup = 300     !number of external current groups
+
 !
 !     CONSTANTS
 !

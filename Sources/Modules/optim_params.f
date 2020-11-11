@@ -1,6 +1,5 @@
       MODULE optim_params
-      USE vparams, ONLY: rprec, dp, nsd, ntord, ntor1d, mpol1d
-      USE vsvd0, ONLY: nigroup
+      USE vparams, ONLY: rprec, dp, nsd, ntord, ntor1d, mpol1d, nigroup
       IMPLICIT NONE
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -40,7 +39,7 @@
       REAL(rprec), DIMENSION(20) :: sigma_jac, sigma_vac_island
 
       COMPLEX :: helicity
-      LOGICAL :: lfix_ntor(-ntord:ntord), 
+      LOGICAL :: lfix_ntor(-ntord:ntord),
      1           lfix_rhob(-ntord:ntord,0:mpol1d+1)
       LOGICAL, DIMENSION(nsd) :: lsurf_mask, ldkes_mask
       LOGICAL :: lextcur(nigroup), lcoilp_sep
@@ -105,7 +104,7 @@ CEAL    !       deviation weighting defaults
       REAL(rprec) :: sigma_diagno(1000), data_diagno(1000)
       CHARACTER(len=30) :: name_diagno(1000)
 
-      NAMELIST /optimum/ epsfcn, niter_opt, num_processors,             & 
+      NAMELIST /optimum/ epsfcn, niter_opt, num_processors,             &
      &   num_levmar_params, nsurf_mask, nopt_alg, nopt_boundary,        &
      &   lreset_opt, ldiag_opt, lkeep_mins, lbmn, lj_star, laspect_max, &
      &   lbeta_min, lj_invariant, liota_prof_opt, lcur_prof_opt,        &
@@ -137,7 +136,7 @@ CEAL    !       deviation weighting defaults
      &   lreconp, lp1zero, kpp, lreconj, lj1zero, kjj,                  &
      &   sigma_vv_rms, mpol_vv, ntor_vv, nu_vv, nv_vv, rbc_vv, zbs_vv,  &
      &   shapeweight, planes_bw, amplw_bw, theta0_bw,phi0_bw, wtheta_bw,&
-     &   wphi_bw,  
+     &   wphi_bw,
      &   lcoil_complex, lballoon_mask, ldkes_mask, lseedcur, lneo_mask  &
      &   ,lsurf_mask, lcurprof_opt, lprof_opt, target_well, lcoil_opt   & !!Obsolete, retain for consistency
      &   ,sigma_centering, lpress_opt, lbootstrap, lbal_opt, lboundary  &
@@ -152,7 +151,7 @@ CEAL    !       deviation weighting defaults
 !                             0 = Levenberg-Marquardt (default)
 !                             1 = Genetic (GA)
 !                             2 = Differential Evolution (DE)
-!        nopt_boundary        determines internal representation used for optimization 
+!        nopt_boundary        determines internal representation used for optimization
 !                             in fixed-boundary runs (LFREEB=.f)
 !                             0 = Hirshman-Breslau (default)
 !                             1 = Advanced HB
@@ -165,15 +164,15 @@ CEAL    !       deviation weighting defaults
 !        epsfcn               'Annealing' parameter, 1.E-2 or less. If
 !                             lreset_opt=F, epsfcn <= 1.E-3; if lreset_opt=T,
 !                             epsfcn <= 1.E-4 is recommended
-!        r00_scale 
+!        r00_scale
 !        b00_scale
 !        r00_opt
 !        mboz_opt             User-input number of poloidal boozer modes
 !        nboz_opt             User-input number of toroidal boozer modes
 !        numJstar
 !        numJInvariant
-!        sym_type 
-!        m_vac_island, n_vac_island 
+!        sym_type
+!        m_vac_island, n_vac_island
 !        m_jac, n_jac
 !        jboot
 !        fboot
@@ -190,20 +189,20 @@ CEAL    !       deviation weighting defaults
 !        zeff_boot
 !        oh_coefs
 !        rbc_vv, zbs_vv
-!        theta0_bw, phi0_bw, amplw_bw  
+!        theta0_bw, phi0_bw, amplw_bw
 !        planes_bw
 !------------------------------------
 !        CONTROL-MASK ARRAYS
 !------------------------------------
 !        nsurf_mask           Real array (size=nrad) giving the fractional radial s-values
-!                             at which optimizations are to be done for bmin, bmax, Jinvariant, 
+!                             at which optimizations are to be done for bmin, bmax, Jinvariant,
 !                             DKES, NEO calculations
-!        lsurf_mask (obs)     Logical array (size=nrad); use nsurf_mask 
-!        nballoon_mask        Real array (size=nrad) containing fractional radial s-values 
+!        lsurf_mask (obs)     Logical array (size=nrad); use nsurf_mask
+!        nballoon_mask        Real array (size=nrad) containing fractional radial s-values
 !                             where ballooning growth rates are to be computed
 !        lballoon_mask (obs)  Logical array (size=nrad) designating surfaces where
 !                             ballooning growth rates are to be computed (=T); use nballoon mask
-!        lextcur              Logical array (size>=nextcur); if (i-th) element =T and lfreeb=True, 
+!        lextcur              Logical array (size>=nextcur); if (i-th) element =T and lfreeb=True,
 !                             extcur(i) will be varied as an independent variable.
 !        ndkes_mask
 !        ldkes_mask
@@ -218,7 +217,7 @@ CEAL    !       deviation weighting defaults
 !        lcur_prof_opt        =T, ncurr set to 1 and ac current series expansion coefficients
 !                             are varied as independent variables
 !                             =F (default), ac coefficients are fixed (if ncurr = 1)
-!        liota_prof_opt       =T, ncurr set to 0 and ai iota series expansion coefficients 
+!        liota_prof_opt       =T, ncurr set to 0 and ai iota series expansion coefficients
 !                             are varied as independent variables
 !        ledge_current        =T, vary curtor (edge current), provided ncurr=1
 !        lphiedge             =T, vary phiedge (edge toroidal flux)
@@ -284,8 +283,8 @@ CEAL    !       deviation weighting defaults
 !------------------------------------
 !        Equilibrium and Geometry
 !------------------------------------
-!        Target_AspectRatio   Aspect Ratio 
-!        sigma_aspect         
+!        Target_AspectRatio   Aspect Ratio
+!        sigma_aspect
 !        Target_MaxCurrent    Maximum integrated toroidal current
 !                             (bounding current, matched at each radial position)
 !        sigma_maxcurrent
@@ -305,17 +304,17 @@ CEAL    !       deviation weighting defaults
 !        Target_iota_max      maximum iota value (as upper bound)
 !        sigma_iota_max
 !        Target_rmin          minimum major radius over the boundary
-!        sigma_rmin           
+!        sigma_rmin
 !        Target_rmax          maximum major radius over the boundary
-!        sigma_rmax           
+!        sigma_rmax
 !        Target_zmax          maximum height over the boundary
-!        sigma_zmax           
+!        sigma_zmax
 !        Target_ellipticity   desired elongation of phi=0 cross section
 !        sigma_ellipticity
 !        Target_kappa         desired <kappa> (n=0 component of elongation)
-!        sigma_kappa          
+!        sigma_kappa
 !        Target_fluxp         Minimum poloidal flux (Wb)
-!        sigma_fluxp          
+!        sigma_fluxp
 !        sigma_curv           Forces curvature kurtosis to zero at phi=0,90,180,270
 !
 !        Stability
@@ -326,26 +325,26 @@ CEAL    !       deviation weighting defaults
 !        sigma_vp             Array (nrad) of sigmas for well
 !        sigma_Mercier        Sigma for Mercier stability (not relative)
 !        Target_balloon       Real array (size=nrad) of ballooning eigenvalue (=0 for marginal stability)
-!        sigma_balloon        Real array (size=nrad) 
+!        sigma_balloon        Real array (size=nrad)
 !        sigma_pgrad          Real array (size=nrad) forcing local pressure gradient to zero
 !        sigma_pedge          Real array (size=1) for forcing pressure value at edge to zero
 !        Target_kink          array of kink eigenvalues. Can be used to bias the chi-square
 !                             to achieve stability
 !        sigma_kink           Array of sigmas for full kink stability calc.,
 !                             The first sigma value is used in a call to xtprp/ft5tpr
-!                             the second value is used for xtprp2/ft5tpr2,and so-on for successive values.  
+!                             the second value is used for xtprp2/ft5tpr2,and so-on for successive values.
 !                             This allows targetting of multiple mode families. The sigma values are  *not relative*
 !
 !        Coils Currents
 !------------------------------------
-!        sigma_extcur         Array (dim=nextcur) of sigmas for the coil-currents used for regularizing 
-!                             (forcing to zero) the coil currents in the extcur array for which the mask array 
+!        sigma_extcur         Array (dim=nextcur) of sigmas for the coil-currents used for regularizing
+!                             (forcing to zero) the coil currents in the extcur array for which the mask array
 !                             lextcur = T
-!        Target_rbtor         The effective poloidal coil currents (R*Bt) used to constrain sum of varied external 
+!        Target_rbtor         The effective poloidal coil currents (R*Bt) used to constrain sum of varied external
 !                             coil currents ([T] - [m]). Only needed if lcoil_geom=F (fixed coil geometry); otherwise,
 !                             handled by xcoilgeom.
-!        sigma_rbtor  
-!        oh_coefs             Array (size=nextcur) for imposing a linear sum constraint on the coil currents, 
+!        sigma_rbtor
+!        oh_coefs             Array (size=nextcur) for imposing a linear sum constraint on the coil currents,
 !                             e.g. for ensuring that a PF set does not generate net poloidal flux.
 !                             Constraint is sum_i (oh_coefs(i)*extcur(i))
 !        sigma_oh             sigma for the OH flux constraint (weighted linear sum
@@ -354,7 +353,7 @@ CEAL    !       deviation weighting defaults
 !        NESCOIL current-sheet (lnescoil_opt=T)
 !------------------------------------
 !        Target_coil_complex  desired maximum coil complexity measure (<M> for coils on sheet)
-!        sigma_coil_complex   
+!        sigma_coil_complex
 !        Target_coil_jmax     desired maximum coil current density
 !        sigma_coil_jmax
 !        sigma_berr_ave       forces NESCOIL berr to zero
@@ -373,7 +372,7 @@ CEAL    !       deviation weighting defaults
 !        sigma_bmn            Real array (size=nrad) for forcing specific bmns to zero
 !                             (relative to largest bmn). Used to obtain quasi-symmetric spectra
 !                             in conjunction with helicity specification.
-        
+
 
 !        target_iota_max, sigma_iota_max
 !        target_iota_min, sigma_iota_min
@@ -384,15 +383,15 @@ CEAL    !       deviation weighting defaults
 !        sigma_pseudo2
 !        sigma_bal
 !        sigma_vac_island,
-!        sigma_jstar 
+!        sigma_jstar
 !        sigma_jinvariant
 !        sigma_jac
-!        sigma_oh         
+!        sigma_oh
 !        sigma_bmin
-!        sigma_bmax 
+!        sigma_bmax
 !        sigma_ripple
 !        sigma_curv
-!        sigma_pgrad 
+!        sigma_pgrad
 !        sigma_pedge
 !        sigma_neo
 !        sigma_dsubr
@@ -427,7 +426,7 @@ CEAL    !       deviation weighting defaults
       b00_scale = 1
       kpp = 10 ; kjj = 10
       lreconp = .false.  ;  lreconj = .false.
-      lp1zero = .false.  ;  lj1zero = .false. 
+      lp1zero = .false.  ;  lj1zero = .false.
 
       mboz_opt = 0; nboz_opt = 0; nbmn=0; nproc=0
       opt_ext = 'none'
@@ -585,7 +584,7 @@ CEAL    !       deviation weighting defaults
       nu_vv = 5
       nv_vv = 2
       shapeweight = .FALSE.; amplw_bw = 0
-      theta0_bw(1) = 0 ; theta0_bw(2) = 0 ; theta0_bw(3) = 0 
+      theta0_bw(1) = 0 ; theta0_bw(2) = 0 ; theta0_bw(3) = 0
       phi0_bw = 0 ; wtheta_bw = .5 ; wphi_bw = .5
       planes_bw(1) = 0 ; planes_bw(2) = 1.5707 ; planes_bw(3) = 3.14159
 
