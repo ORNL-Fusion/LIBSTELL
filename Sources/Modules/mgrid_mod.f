@@ -1,6 +1,7 @@
       MODULE mgrid_mod
       USE v3_utilities
       USE stel_kinds
+      USE vmec_input, ONLY: lfreeb
       USE vparams, ONLY: nigroup
       IMPLICIT NONE
 
@@ -66,11 +67,7 @@ C-----------------------------------------------
      1    rlim, zlim, reslim, seplim
       CHARACTER(LEN=1) :: mgrid_mode
 
-#if defined(NETCDF)
-      PRIVATE :: read_mgrid_bin, read_mgrid_nc
-#else
-      PRIVATE :: read_mgrid_bin
-#endif
+      PRIVATE :: read_mgrid_nc
 
       CONTAINS
 
@@ -190,7 +187,6 @@ C-----------------------------------------------
 
       IF (.not.lgrid_exist .or. ier_flag.ne.0) THEN
          lfreeb = .false.
-         lrecon = .false.
          IF (lscreen) THEN
             PRINT *, ' Error opening/reading mgrid file in dir: ',
      1                TRIM(home_dir)
