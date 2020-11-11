@@ -146,7 +146,7 @@
 !>    nfp = 1,
 !>    ns_array = 15,
 !>    ftol_array = 1.0E-20,
-!>    niter = 25000,
+!>    niter_array = 25000,
 !>    nstep = 200,
 !>    ntor = 0,
 !>    mpol = 2,
@@ -411,8 +411,8 @@
 
 !  Control Parameters.
       adiabatic = 0
-      niter_array = -1;
-      niter = 100
+      niter_array = -1
+      niter_array(1) = 100
       nstep = 10
       nvacskip = 1
       delt = 1

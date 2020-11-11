@@ -50,7 +50,6 @@ target_sources(stell
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tf_coils.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/thscte_T.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/v3_utilities.f>
-               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/v3f_vmec_comm.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/v3post_rfun.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vacfield_mod.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vcoilpts.f>
@@ -61,6 +60,5 @@ target_sources(stell
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vmec_seq.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vmec_utils.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vparams.f>
-               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vsvd0.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/write_array_generic.f>
 )
