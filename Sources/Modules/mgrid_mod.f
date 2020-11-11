@@ -42,8 +42,7 @@ C-----------------------------------------------
 !
       INTEGER :: nr0b, np0b, nfper0, nz0b
       INTEGER :: nobd, nobser, nextcur, nbfldn, nbsets, nbcoilsn
-      INTEGER :: nbvac, nbcoil_max, nlim, nlim_max, nsets,
-     1           nrgrid, nzgrid
+      INTEGER :: nbvac, nlim, nsets, nrgrid, nzgrid
       INTEGER, DIMENSION(:), ALLOCATABLE :: needflx, nbcoils
       INTEGER, DIMENSION(:), ALLOCATABLE :: limitr, nsetsn
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: iconnect, needbfld
