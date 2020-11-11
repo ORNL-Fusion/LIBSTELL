@@ -252,7 +252,7 @@
       CHARACTER (len=short_name) :: piota_type
 
       INTEGER, PARAMETER :: norm_term_flag=0,                           &
-         bad_jacobian_flag=1, more_iter_flag=2, jac75_flag=4
+         bad_jacobian_flag=1, jac75_flag=4
 
 !     OVERLOAD SUBROUTINE READ_WOUT_FILE TO ACCEPT BOTH UNIT NO. (OPENED EXTERNALLY)
 !     OR FILENAME (HANDLE OPEN/CLOSE HERE)
@@ -265,8 +265,7 @@
 #else
       PRIVATE :: read_wout_text
 #endif
-      PRIVATE :: norm_term_flag, bad_jacobian_flag,                     &
-                 more_iter_flag, jac75_flag
+      PRIVATE :: norm_term_flag, bad_jacobian_flag, jac75_flag
 
       CONTAINS
 
@@ -441,8 +440,7 @@
          nstore_seq = 100
       END IF
 
-      IF (ierr_vmec.ne.norm_term_flag .and.                             &
-          ierr_vmec.ne.more_iter_flag) GOTO 1000
+      IF (ierr_vmec.ne.norm_term_flag) GOTO 1000
 
       IF (nextcur .gt. nigroup) istat(15) = -1
 
@@ -801,8 +799,7 @@
 ! Read in scalar variables
       CALL cdf_read(nwout, vn_error, ierr_vmec)
 
-      IF (ierr_vmec.ne.norm_term_flag .and.                             &
-          ierr_vmec.ne.more_iter_flag) GOTO 1000
+      IF (ierr_vmec.ne.norm_term_flag) GOTO 1000
 
       CALL cdf_read(nwout, vn_version, version_)
       CALL cdf_read(nwout, vn_extension, input_extension)
@@ -1334,8 +1331,7 @@
          WRITE (iounit, *) imse, itse, nbsets, nobd, nextcur
       END IF
 
-      IF (ierr_vmec .ne. norm_term_flag .and.                                  &
-     &    ierr_vmec .ne. more_iter_flag) THEN
+      IF (ierr_vmec .ne. norm_term_flag) THEN
          GOTO 1000
       END IF
 
