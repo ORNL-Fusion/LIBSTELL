@@ -20,12 +20,12 @@
 !
 !     CONSTANTS
 !
-      INTEGER, PARAMETER :: nthreed0=9, nmac0=nthreed0+1,
+      INTEGER, PARAMETER :: nthreed0=9,
      1                      indata0=nthreed0+2, nwout0=nthreed0+3,
      2                      jxbout0=nthreed0+4
       INTEGER, PARAMETER :: nfort8=8, nfort18=18
       INTEGER, PARAMETER :: nlog0=51, nmercier0=52
-      INTEGER            :: nthreed, nmac, nlog=nlog0
+      INTEGER            :: nthreed, nlog=nlog0
 
 !
 !     DERIVED (FROM FUNDAMENTAL) PARAMETERS FOR VMEC CODE
