@@ -43,13 +43,9 @@ if (MPI_Fortran_FOUND)
     target_compile_options (stell PUBLIC -DMPI_OPT)
     target_include_directories (stell PRIVATE ${MPI_C_INCLUDE_DIRS})
     target_link_libraries (stell INTERFACE MPI::MPI_Fortran)
-    message (status ${MPIEXEC_EXECUTABLE})
-    message (status ${MPIEXEC_NUMPROC_FLAG})
-    message (status ${MPI_OVERSUBSCRIBE_FLAG})
     set_target_properties (stell PROPERTIES
                            MPIEXEC_EXECUTABLE "${MPIEXEC_EXECUTABLE}"
-                           MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}"
-                           MPI_OVERSUBSCRIBE_FLAG "${MPI_OVERSUBSCRIBE_FLAG}")
+                           MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}")
 endif ()
 
 if (NetCDF_FOUND)
