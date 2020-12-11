@@ -4,7 +4,10 @@ project (libstell C Fortran)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package (NetCDF MODULE REQUIRED)
+find_package (SCALAPACK MODULE REQUIRED)
 find_package (MPI REQUIRED)
+find_package (BLAS REQUIRED)
+find_package (LAPACK REQUIRED)
 
 add_library (stell STATIC)
 
@@ -40,11 +43,26 @@ if (MPI_Fortran_FOUND)
     target_compile_options (stell PUBLIC -DMPI_OPT)
     target_include_directories (stell PRIVATE ${MPI_C_INCLUDE_DIRS})
     target_link_libraries (stell INTERFACE MPI::MPI_Fortran)
+    set_target_properties (stell PROPERTIES
+                           MPIEXEC_EXECUTABLE "${MPIEXEC_EXECUTABLE}"
+                           MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}")
 endif ()
 
 if (NetCDF_FOUND)
     target_compile_definitions (stell PUBLIC NETCDF)
     target_link_libraries (stell PUBLIC NetCDF::NetCDF)
+endif ()
+
+if (SCALAPACK_FOUND)
+    target_link_libraries (stell PUBLIC SCALAPACK::SCALAPACK)
+endif ()
+
+if (BLAS_FOUND)
+    target_link_libraries (stell PUBLIC ${BLAS_LIBRARIES})
+endif ()
+
+if (LAPACK_FOUND)
+    target_link_libraries (stell PUBLIC ${LAPACK_LIBRARIES})
 endif ()
 
 ################################################################################
