@@ -577,10 +577,11 @@ C-----------------------------------------------
       INTEGER, DIMENSION(3)   :: dimlens
       CHARACTER(LEN=100) :: temp
 #if defined(MPI_OPT)
-      INTEGER :: mpi_rank, mpi_size, lMPIInit, MPI_ERR
+      LOGICAL :: lMPIInit
+      INTEGER :: mpi_rank, mpi_size, MPI_ERR
 
       CALL MPI_INITIALIZED(lMPIInit, MPI_ERR)
-      IF (lMPIInit.NE.0) THEN
+      IF (lMPIInit) THEN
          CALL MPI_COMM_RANK(comm, mpi_rank, istat)
          CALL MPI_COMM_SIZE(comm, mpi_size, istat)
       ELSE
