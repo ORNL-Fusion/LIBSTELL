@@ -687,7 +687,7 @@ C-----------------------------------------------
 	  np0b = nv
 
 #if defined(MPI_OPT)
-      IF (lMPIInit.NE.0) THEN
+      IF (lMPIInit) THEN
          CALL MPI_ALLREDUCE(MPI_IN_PLACE, bvac, SIZE(bvac), MPI_REAL8,  &
      &                      MPI_SUM, comm, istat)
          CALL assert_eq(istat,0,'MPI_ALLREDUCE failed in read_mgrid_nc')
