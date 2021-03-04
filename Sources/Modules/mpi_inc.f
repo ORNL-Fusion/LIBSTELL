@@ -13,7 +13,7 @@
       IMPLICIT NONE
 
 #if defined(MPI_OPT)
-      INCLUDE 'mpif.h'
+      USE mpi
 #endif
 
       END MODULE
