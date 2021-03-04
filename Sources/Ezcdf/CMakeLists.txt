@@ -1,5 +1,6 @@
 target_sources(stell
                PRIVATE
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/netcdf_inc.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_attrib.f90>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_GenGet.f90>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ezcdf_GenPut.f90>

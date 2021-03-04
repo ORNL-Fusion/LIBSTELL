@@ -1,6 +1,6 @@
 subroutine handle_err(status,nam3,nam1,nam2)
 #ifdef NETCDF
-  include "netcdf.inc"
+  USE netcdf
   INTEGER, intent(in) :: status
   character*(*), intent(in) :: nam1, nam2, nam3
   if (status .ne. nf_noerr) then

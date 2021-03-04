@@ -1,5 +1,9 @@
 MODULE ezcdf_inqvar
- 
+
+#ifdef NETCDF
+  USE netcdf_inc
+#endif
+
   IMPLICIT NONE
 #ifdef NETCDF
   PUBLIC :: cdfInqVar, cdfgv, cdfInqV, cdf_inquire, alpha_numeric
@@ -9,7 +13,6 @@ MODULE ezcdf_inqvar
   END INTERFACE
 
   PRIVATE
-  INCLUDE "netcdf.inc"
 
   CHARACTER*(nf_max_name) :: varnam_noalpha
   PRIVATE varnam_noalpha
@@ -17,6 +20,7 @@ MODULE ezcdf_inqvar
 CONTAINS
  
 subroutine cdfInqVar(ncid,varnam,dimlens,eztype,ier)
+
   ! Inquire a Variable and its dimensions
   ! 03/08/99 C. Ludescher
   ! C. Ludescher/A. Pletzer Tue Apr  4 10:11:33 EDT 2000
