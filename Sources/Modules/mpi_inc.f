@@ -9,11 +9,10 @@
 !*******************************************************************************
 
       MODULE mpi_inc
-
-      IMPLICIT NONE
-
 #if defined(MPI_OPT)
       USE mpi
 #endif
+
+      IMPLICIT NONE
 
       END MODULE
