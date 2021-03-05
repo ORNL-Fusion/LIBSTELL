@@ -274,8 +274,8 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       INTEGER, INTENT(in) :: M
-      REAL(rprec), INTENT(inout), DIMENSION :: A, B
-      REAL(rprec), INTENT(in)               :: C, S
+      REAL(rprec), INTENT(inout) :: A, B
+      REAL(rprec), INTENT(in)    :: C, S
 C-----------------------------------------------
       REAL(rprec) :: YTEMP
 C-----------------------------------------------
