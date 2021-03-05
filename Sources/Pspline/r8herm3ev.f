@@ -80,20 +80,20 @@ C  ier -- completion code:  0 means OK
 C-------------------
 C  local:
 C
-      integer i,j,k                     ! cell indices
+      integer, dimension(1) :: i,j,k                     ! cell indices
 C
 C  normalized displacement from (x(i),y(j)) corner of cell.
 C    xparam=0 @x(i)  xparam=1 @x(i+1)
 C    yparam=0 @y(j)  yparam=1 @y(j+1)
 C    zparam=0 @z(k)  zparam=1 @z(k+1)
 C
-      REAL*8 xparam,yparam,zparam
+      REAL*8, dimension(1) :: xparam,yparam,zparam
 C
 C  cell dimensions and
 C  inverse cell dimensions hxi = 1/(x(i+1)-x(i)), hyi = 1/(y(j+1)-y(j))
 C
-      REAL*8 hx,hy,hz
-      REAL*8 hxi,hyi,hzi
+      REAL*8, dimension(1) :: hx,hy,hz
+      REAL*8, dimension(1) :: hxi,hyi,hzi
 C
 C  0 .le. xparam .le. 1
 C  0 .le. yparam .le. 1
@@ -102,7 +102,8 @@ C
 C---------------------------------------------------------------------
 C
       call r8herm3xyz(xget,yget,zget,x,nx,y,ny,z,nz,ilinx,iliny,ilinz,
-     >   i,j,k,xparam,yparam,zparam,hx,hxi,hy,hyi,hz,hzi,ier)
+     >   i(1),j(1),k(1),xparam(1),yparam(1),zparam(1),hx(1),hxi(1),
+     >   hy(1),hyi(1),hz(1),hzi(1),ier)
       if(ier.ne.0) return
 c
       call r8herm3fcn(ict,1,1,

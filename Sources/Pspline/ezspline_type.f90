@@ -1,7 +1,8 @@
 module EZspline_type
- 
-  integer, parameter  :: ezspline_r8 = selected_real_kind(12,100)
-  integer, parameter  :: ezspline_r4 = selected_real_kind(6,37)
+USE iso_fortran_env, only: REAL64, REAL32
+
+  integer, parameter  :: ezspline_r8 = REAL64!selected_real_kind(12,100)
+  integer, parameter  :: ezspline_r4 = REAL32!selected_real_kind(6,37)
   real(ezspline_r8), parameter :: ezspline_twopi_r8 = 6.2831853071795865_ezspline_r8
   real(ezspline_r4), parameter :: ezspline_twopi_r4 = 6.2831853071795865_ezspline_r4
  
