@@ -274,10 +274,10 @@ C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
       INTEGER, INTENT(in) :: M
-      REAL(rprec), INTENT(inout), DIMENSION(M) :: A, B
-      REAL(rprec), INTENT(in)                  :: C, S
+      REAL(rprec), INTENT(inout), DIMENSION :: A, B
+      REAL(rprec), INTENT(in)               :: C, S
 C-----------------------------------------------
-      REAL(rprec) :: YTEMP(M)
+      REAL(rprec) :: YTEMP
 C-----------------------------------------------
       YTEMP = A
       A = YTEMP*C + B*S
