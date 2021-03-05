@@ -51,6 +51,13 @@
 !-------------------------------------------------------------------------------
 !>  Interface to inquire a dimension id.
 !-------------------------------------------------------------------------------
+      INTERFACE nf_strerror
+         MODULE PROCEDURE nf90_strerror
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Interface to inquire a dimension id.
+!-------------------------------------------------------------------------------
       INTERFACE nf_inq_dimid
          MODULE PROCEDURE nf90_inq_dimid
       END INTERFACE
@@ -175,7 +182,7 @@
 !>  @param[in]  ncid   Netcdf file id.
 !>  @param[in]  name   Variable id.
 !>  @param[in]  xtype  Variable type.
-!>  @param[in]  ndims  Number of dimensions not used.
+!>  @param[in]  ndims  Number of dimensions.
 !>  @param[in]  dimids Dimension ids.
 !>  @param[out] varid  Variable id.
 !-------------------------------------------------------------------------------
@@ -193,7 +200,8 @@
       INTEGER, INTENT(out)                         :: varid
 
 !  Start of executable code
-      nf_def_var = nf90_def_var(ncid, name, xtype, dimids, varid)
+      nf_def_var = nf90_def_var(ncid, name, xtype,                             &
+     &                          dimids=dimids(:ndims), varid=varid)
 
       END FUNCTION
 
