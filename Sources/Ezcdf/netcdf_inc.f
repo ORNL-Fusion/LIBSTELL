@@ -37,10 +37,39 @@
 !>  No error responce.
       INTEGER, PARAMETER :: nf_noerr = nf90_noerr
 
+!>  Write flag.
+      INTEGER, PARAMETER :: nf_write = nf90_write
+!>  Readonly flag.
+      INTEGER, PARAMETER :: nf_nowrite = nf90_nowrite
+!>  Clobber flag.
+      INTEGER, PARAMETER :: nf_clobber = nf90_clobber
+!>  64bit offset flag.
+      INTEGER, PARAMETER :: nf_64bit_offset = nf90_64bit_offset
 
 !*******************************************************************************
 !  INTERFACE BLOCKS
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  Interface to open a file.
+!-------------------------------------------------------------------------------
+      INTERFACE nf_open
+         MODULE PROCEDURE nf90_open
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Interface to open a file.
+!-------------------------------------------------------------------------------
+      INTERFACE nf_create
+         MODULE PROCEDURE nf90_create
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Interface to open a file.
+!-------------------------------------------------------------------------------
+      INTERFACE nf_close
+         MODULE PROCEDURE nf90_close
+      END INTERFACE
+
 !-------------------------------------------------------------------------------
 !>  Interface to inquire a dimension id.
 !-------------------------------------------------------------------------------
