@@ -48,18 +48,18 @@ C  ier -- completion code:  0 means OK
 C-------------------
 C  local:
 C
-      integer :: i=0                         ! cell index
+      integer, dimension(1) :: i=0                         ! cell index
 C
 C  normalized displacement from (x(i)) corner of cell.
 C    xparam=0 @x(i)  xparam=1 @x(i+1)
 C
-      real xparam
+      real, dimension(1) :: xparam
 C
 C  cell dimensions and
 C  inverse cell dimensions hxi = 1/(x(i+1)-x(i))
 C
-      real hx
-      real hxi
+      real, dimension(1) :: hx
+      real, dimension(1) :: hxi
 C
 C  0 .le. xparam .le. 1
 C

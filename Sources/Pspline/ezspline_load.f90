@@ -325,6 +325,19 @@
      character*32 zpre
      logical :: fullsv
 
+     interface
+        subroutine ezspline_cdfget3(ncid,zname,fspl,idim1,idim2,idim3,ifail)
+
+        use ezcdf
+        implicit NONE
+        integer, intent(in) :: ncid             ! opened NetCDF file
+        character*(*),intent(in) :: zname       ! name to us for writing
+        integer, intent(in) :: idim1,idim2,idim3   ! spline data dimensions
+        real*8, intent(out) :: fspl(idim1,idim2,idim3)  ! spline data & coefficients
+        integer, intent(out) :: ifail           ! status retruned from NetCDF
+        end subroutine ezspline_cdfget3
+     end interface
+
      if(present(spl_name)) then
         zpre = spl_name
      else

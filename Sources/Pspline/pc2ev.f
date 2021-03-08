@@ -59,19 +59,19 @@ C  ier -- completion code:  0 means OK
 C-------------------
 C  local:
 C
-      integer i,j                       ! cell indices
+      integer, dimension(1) :: i, j  ! cell indices
 C
 C  normalized displacement from (x(i),y(j)) corner of cell.
 C    xparam=0 @x(i)  xparam=1 @x(i+1)
 C    yparam=0 @y(j)  yparam=1 @y(j+1)
 C
-      real xparam,yparam
+      real, dimension(1) :: xparam, yparam
 C
 C  cell dimensions and
 C  inverse cell dimensions hxi = 1/(x(i+1)-x(i)), hyi = 1/(y(j+1)-y(j))
 C
-      real hx,hy
-      real hxi,hyi
+      real, dimension(1) :: hx, hy
+      real, dimension(1) :: hxi, hyi
 C
 C  0 .le. xparam .le. 1
 C  0 .le. yparam .le. 1

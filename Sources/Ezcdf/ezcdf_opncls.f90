@@ -34,7 +34,7 @@ CONTAINS
     !
     !  for both "W" and "A" modes, the file is opened in "define data mode".
     !
-    include "netcdf.inc"
+    USE netcdf_inc
     INTEGER,       intent(out) :: ncid
     character*(*), intent(in) :: filename
     character*1,   intent(in) :: opt
@@ -74,7 +74,7 @@ CONTAINS
  
 
   subroutine ezcdf_close(ncid, ier)
-    include "netcdf.inc"
+    USE netcdf_inc
     INTEGER, INTENT(in) ::  ncid
     integer, optional,         intent(out) :: ier
     INTEGER status

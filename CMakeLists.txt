@@ -41,11 +41,13 @@ target_compile_options (stell PUBLIC -cpp)
 
 if (MPI_Fortran_FOUND)
     target_compile_options (stell PUBLIC -DMPI_OPT)
-    target_include_directories (stell PRIVATE ${MPI_C_INCLUDE_DIRS})
+    target_include_directories (stell PRIVATE ${MPI_C_INCLUDE_DIRS}
+                                              ${MPI_Fortran_INCLUDE_DIRS})
     target_link_libraries (stell INTERFACE MPI::MPI_Fortran)
     set_target_properties (stell PROPERTIES
                            MPIEXEC_EXECUTABLE "${MPIEXEC_EXECUTABLE}"
-                           MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}")
+                           MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}"
+                           MPIEXEC_MAX_NUMPROCS "${MPIEXEC_MAX_NUMPROCS}")
 endif ()
 
 if (NetCDF_FOUND)

@@ -1,6 +1,10 @@
 MODULE ezcdf_GenPut
   USE ezcdf_opncls
   USE ezcdf_inqvar
+#ifdef NETCDF
+  USE netcdf_inc
+#endif
+
 
   ! Generic Interface to Write netcdf data Variables
   ! 03/10/99 C. Ludescher
@@ -51,7 +55,6 @@ MODULE ezcdf_GenPut
   END INTERFACE
 
   PRIVATE
-  include "netcdf.inc"
 
   INTEGER, PARAMETER :: r4 = SELECTED_REAL_KIND(6,37)
   INTEGER, PARAMETER :: r8 = SELECTED_REAL_KIND(12,100)
