@@ -2,11 +2,11 @@ MODULE ezcdf_GenGet
   USE ezcdf_opncls
   USE ezcdf_inqvar
 #ifdef NETCDF
+  USE netcdf_inc
+
   EXTERNAL handle_err
  
   PRIVATE
- 
-  include "netcdf.inc"
 
   INTEGER, PARAMETER :: r4 = SELECTED_REAL_KIND(6,37)
   INTEGER, PARAMETER :: r8 = SELECTED_REAL_KIND(12,100)

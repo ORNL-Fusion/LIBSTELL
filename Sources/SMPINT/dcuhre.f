@@ -379,7 +379,7 @@ C
      +            IFAIL,WTLENG)
       WRKSUB = (NW - 1 - 17*MDIV*NUMFUN)/(2*NDIM + 2*NUMFUN + 2)
       IF (IFAIL.NE.0) THEN
-          GO TO 999
+         RETURN
       END IF
 C
 C   Split up the work space.
@@ -418,11 +418,12 @@ C
      +            WORK2(K1),WORK2(K2),WORK2(K3),WORK2(K4),WORK2(K5),
      +            WORK2(K6),WORK2(K7),WORK2(K8))
       WORK(NW) = NSUB
-999   RETURN
+
 C
 C***END DCUHRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE DCHHRE(MAXDIM,NDIM,NUMFUN,MDIV,A,B,MINPTS,MAXPTS,
      +                  EPSABS,EPSREL,KEY,NW,RESTAR,NUM,MAXSUB,MINSUB,
      +                  KEYF,IFAIL,WTLENG)
@@ -548,7 +549,7 @@ C
 C
 C   Local variables.
 C
-      INTEGER LIMIT,J
+      INTEGER LIMIT
 C
 C***FIRST EXECUTABLE STATEMENT DCHHRE
 C
@@ -558,28 +559,28 @@ C   Check on legal KEY.
 C
       IF (KEY.LT.0 .OR. KEY.GT.4) THEN
           IFAIL = 2
-          GO TO 999
+          RETURN
       END IF
 C
 C   Check on legal NDIM.
 C
       IF (NDIM.LT.2 .OR. NDIM.GT.MAXDIM) THEN
           IFAIL = 3
-          GO TO 999
+          RETURN
       END IF
 C
 C   For KEY = 1, NDIM must be equal to 2.
 C
       IF (KEY.EQ.1 .AND. NDIM.NE.2) THEN
           IFAIL = 4
-          GO TO 999
+          RETURN
       END IF
 C
 C   For KEY = 2, NDIM must be equal to 3.
 C
       IF (KEY.EQ.2 .AND. NDIM.NE.3) THEN
           IFAIL = 5
-          GO TO 999
+          RETURN
       END IF
 C
 C   For KEY = 0, we point at the selected integration rule.
@@ -630,37 +631,35 @@ C   Check on positive NUMFUN.
 C
       IF (NUMFUN.LT.1) THEN
           IFAIL = 6
-          GO TO 999
+          RETURN
       END IF
 C
 C   Check on legal upper and lower limits of integration.
 C
-      DO 10 J = 1,NDIM
-          IF (A(J)-B(J).EQ.0) THEN
-              IFAIL = 7
-              GO TO 999
-          END IF
-10    CONTINUE
+      IF (ANY(A - B .eq. 0)) THEN
+         IFAIL = 7
+         RETURN
+      END IF
 C
 C   Check on MAXPTS < 3*NUM.
 C
       IF (MAXPTS.LT.3*NUM) THEN
           IFAIL = 8
-          GO TO 999
+          RETURN
       END IF
 C
 C   Check on MAXPTS >= MINPTS.
 C
       IF (MAXPTS.LT.MINPTS) THEN
           IFAIL = 9
-          GO TO 999
+          RETURN
       END IF
 C
 C   Check on legal accuracy requests.
 C
       IF (EPSABS.LT.0 .AND. EPSREL.LT.0) THEN
           IFAIL = 10
-          GO TO 999
+          RETURN
       END IF
 C
 C   Check on big enough double precision workspace.
@@ -668,20 +667,20 @@ C
       LIMIT = MAXSUB* (2*NDIM+2*NUMFUN+2) + 17*MDIV*NUMFUN + 1
       IF (NW.LT.LIMIT) THEN
           IFAIL = 11
-          GO TO 999
+          RETURN
       END IF
 C
 C    Check on legal RESTAR.
 C
       IF (RESTAR.NE.0 .AND. RESTAR.NE.1) THEN
           IFAIL = 12
-          GO TO 999
+          RETURN
       END IF
-999   RETURN
 C
 C***END DCHHRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE DADHRE(NDIM,NUMFUN,MDIV,A,B,MINSUB,MAXSUB,FUNSUB,
      +                  EPSABS,EPSREL,KEY,RESTAR,NUM,LENW,WTLENG,
      +                  RESULT,ABSERR,NEVAL,NSUB,IFAIL,VALUES,
@@ -895,11 +894,9 @@ C
 C   Get the correct sign on the integral.
 C
       INTSGN = 1
-      DO 10 J = 1,NDIM
-          IF (B(J).LT.A(J)) THEN
-              INTSGN = - INTSGN
-          END IF
-10    CONTINUE
+      IF (ANY(B .LT. A)) THEN
+         INTSGN = -INTSGN
+      END IF
 C
 C   Call DINHRE to compute the weights and abscissas of
 C   the function evaluation points.
@@ -916,17 +913,14 @@ C
 C   Initialize the SBRGNS, CENTRS and HWIDTS.
 C
       SBRGNS = 1
-      DO 15 J = 1,NDIM
-          CENTRS(J,1) = (A(J)+B(J))/2
-          HWIDTS(J,1) = ABS(B(J)-A(J))/2
-15    CONTINUE
+      CENTRS(:,1) = (A + B)/2
+      HWIDTS(:,1) = ABS(B - A)/2
+
 C
 C   Initialize RESULT, ABSERR and NEVAL.
 C
-      DO 20 J = 1,NUMFUN
-          RESULT(J) = 0
-          ABSERR(J) = 0
-20    CONTINUE
+      RESULT = 0
+      ABSERR = 0
       NEVAL = 0
 C
 C   Apply DRLHRE over the whole region.
@@ -938,12 +932,8 @@ C
 C
 C   Add the computed values to RESULT and ABSERR.
 C
-      DO 55 J = 1,NUMFUN
-          RESULT(J) = RESULT(J) + VALUES(J,1)
-55    CONTINUE
-      DO 65 J = 1,NUMFUN
-          ABSERR(J) = ABSERR(J) + ERRORS(J,1)
-65    CONTINUE
+      RESULT = RESULT + VALUES(:,1)
+      ABSERR = ABSERR + ERRORS(:,1)
 C
 C   Store results in heap.
 C
@@ -956,14 +946,14 @@ C
 C***Begin loop while the error is too great,
 C   and SBRGNS+1 is less than MAXSUB.
 C
-110   IF (SBRGNS+1.LE.MAXSUB) THEN
+110   IF (SBRGNS + 1 .LE. MAXSUB) THEN
 C
 C   If we are allowed to divide further,
 C   prepare to apply basic rule over each half of the
 C   NDIV subregions with greatest errors.
 C   If MAXSUB is great enough, NDIV = MDIV
 C
-          IF (MDIV.GT.1) THEN
+          IF (MDIV .GT. 1) THEN
               NDIV = MAXSUB - SBRGNS
               NDIV = MIN(NDIV,MDIV,SBRGNS)
           ELSE
@@ -973,22 +963,18 @@ C
 C   Divide the NDIV subregions in two halves, and compute
 C   integral and error over each half.
 C
-          DO 150 I = 1,NDIV
+          DO I = 1,NDIV
               POINTR = SBRGNS + NDIV + 1 - I
 C
 C   Adjust RESULT and ABSERR.
 C
-              DO 115 J = 1,NUMFUN
-                  RESULT(J) = RESULT(J) - VALUES(J,1)
-                  ABSERR(J) = ABSERR(J) - ERRORS(J,1)
-115           CONTINUE
+              RESULT = RESULT - VALUES(:,1)
+              ABSERR = ABSERR - ERRORS(:,1)
 C
 C   Compute first half region.
 C
-              DO 120 J = 1,NDIM
-                  CENTRS(J,POINTR) = CENTRS(J,1)
-                  HWIDTS(J,POINTR) = HWIDTS(J,1)
-120           CONTINUE
+              CENTRS(:,POINTR) = CENTRS(:,1)
+              HWIDTS(:,POINTR) = HWIDTS(:,1)
               DIRECT = DIR(1)
               DIR(POINTR) = DIRECT
               HWIDTS(DIRECT,POINTR) = HWIDTS(DIRECT,1)/2
@@ -997,9 +983,7 @@ C
 C
 C   Save the computed values of the integrals.
 C
-              DO 125 J = 1,NUMFUN
-                  OLDRES(J,NDIV-I+1) = VALUES(J,1)
-125           CONTINUE
+              OLDRES(:,NDIV-I+1) = VALUES(:,1)
 C
 C   Adjust the heap.
 C
@@ -1009,51 +993,45 @@ C
 C
 C   Compute second half region.
 C
-              DO 130 J = 1,NDIM
-                  CENTRS(J,POINTR-1) = CENTRS(J,POINTR)
-                  HWIDTS(J,POINTR-1) = HWIDTS(J,POINTR)
-130           CONTINUE
+              CENTRS(:,POINTR-1) = CENTRS(:,POINTR)
+              HWIDTS(:,POINTR-1) = HWIDTS(:,POINTR)
               CENTRS(DIRECT,POINTR-1) = OLDCEN + HWIDTS(DIRECT,POINTR)
               HWIDTS(DIRECT,POINTR-1) = HWIDTS(DIRECT,POINTR)
               DIR(POINTR-1) = DIRECT
-150       CONTINUE
+          END DO
 C
 C   Make copies of the generators for each processor.
 C
-          DO 190 I = 2,2*NDIV
-              DO 190 J = 1,NDIM
-                  DO 190 K = 1,WTLENG
-                      G(J,K,I) = G(J,K,1)
-190       CONTINUE
+          DO I = 2,2*NDIV
+              G(:,:,I) = G(:,:,1)
+          END DO
 C
 C   Apply basic rule.
 C
 Cvd$l cncall
-          DO 200 I = 1,2*NDIV
+          DO I = 1, 2*NDIV
               INDEX = SBRGNS + I
-              L1 = 1 + (I-1)*8*NUMFUN
+              L1 = 1 + (I - 1)*8*NUMFUN
               CALL DRLHRE(NDIM,CENTRS(1,INDEX),HWIDTS(1,INDEX),WTLENG,
      +                    G(1,1,I),W,ERRCOF,NUMFUN,FUNSUB,SCALES,NORMS,
      +                    X(1,I),WORK(L1),VALUES(1,INDEX),
      +                    ERRORS(1,INDEX),DIR(INDEX))
-200       CONTINUE
+          END DO
           NEVAL = NEVAL + 2*NDIV*NUM
 C
 C   Add new contributions to RESULT.
 C
-          DO 220 I = 1,2*NDIV
-              DO 210 J = 1,NUMFUN
-                  RESULT(J) = RESULT(J) + VALUES(J,SBRGNS+I)
-210           CONTINUE
-220       CONTINUE
+          DO I = 1, 2*NDIV
+              RESULT = RESULT + VALUES(:,SBRGNS+I)
+          END DO
 C
 C   Check consistency of results and if necessary adjust
 C   the estimated errors.
 C
-          DO 240 I = 1,NDIV
+          DO I = 1,NDIV
               GREATE(SBRGNS+2*I-1) = 0
               GREATE(SBRGNS+2*I) = 0
-              DO 230 J = 1,NUMFUN
+              DO J = 1,NUMFUN
                   EST1 = ABS(OLDRES(J,I)- (VALUES(J,
      +                   SBRGNS+2*I-1)+VALUES(J,SBRGNS+2*I)))
                   EST2 = ERRORS(J,SBRGNS+2*I-1) + ERRORS(J,SBRGNS+2*I)
@@ -1076,17 +1054,17 @@ C
                   END IF
                   ABSERR(J) = ABSERR(J) + ERRORS(J,SBRGNS+2*I-1) +
      +                        ERRORS(J,SBRGNS+2*I)
-230           CONTINUE
-240       CONTINUE
+              END DO
+          END DO
 C
 C   Store results in heap.
 C
-          DO 250 I = 1,2*NDIV
+          DO I = 1,2*NDIV
               INDEX = SBRGNS + I
               CALL DTRHRE(2,NDIM,NUMFUN,INDEX,VALUES,ERRORS,CENTRS,
      +                    HWIDTS,GREATE,WORK(1),WORK(NUMFUN+1),CENTER,
      +                    HWIDTH,DIR)
-250       CONTINUE
+          END DO
           SBRGNS = SBRGNS + 2*NDIV
 C
 C   Check for termination.
@@ -1094,12 +1072,10 @@ C
           IF (SBRGNS.LT.MINSUB) THEN
               GO TO 110
           END IF
-          DO 255 J = 1,NUMFUN
-              IF (ABSERR(J).GT.EPSREL*ABS(RESULT(J)) .AND.
-     +            ABSERR(J).GT.EPSABS) THEN
-                  GO TO 110
-              END IF
-255       CONTINUE
+          IF (ANY(ABSERR .gt. EPSREL*ABS(RESULT) .and.
+     &            ABSERR .gt. EPSABS)) THEN
+              GO TO 110
+          END IF
           IFAIL = 0
           GO TO 499
 C
@@ -1113,28 +1089,22 @@ C
 C   Compute more accurate values of RESULT and ABSERR.
 C
 499   CONTINUE
-      DO 500 J = 1,NUMFUN
-          RESULT(J) = 0
-          ABSERR(J) = 0
-500   CONTINUE
-      DO 510 I = 1,SBRGNS
-          DO 505 J = 1,NUMFUN
-              RESULT(J) = RESULT(J) + VALUES(J,I)
-              ABSERR(J) = ABSERR(J) + ERRORS(J,I)
-505       CONTINUE
-510   CONTINUE
+      RESULT = 0
+      ABSERR = 0
+      DO I = 1,SBRGNS
+          RESULT = RESULT + VALUES(:,I)
+          ABSERR = ABSERR + ERRORS(:,I)
+      END DO
 C
 C   Compute correct sign on the integral.
 C
-      DO 600 J = 1,NUMFUN
-          RESULT(J) = RESULT(J)*INTSGN
-600   CONTINUE
+      RESULT = RESULT*INTSGN
       NSUB = SBRGNS
-      RETURN
 C
 C***END DADHRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE DINHRE(NDIM,KEY,WTLENG,W,G,ERRCOF,RULPTS,SCALES,NORMS)
 C***BEGIN PROLOGUE DINHRE
 C***PURPOSE DINHRE computes abscissas and weights of the integration
@@ -1224,28 +1194,28 @@ C
 C
 C   Compute SCALES and NORMS.
 C
-      DO 100 K = 1,3
-          DO 50 I = 1,WTLENG
+      DO K = 1,3
+          DO I = 1,WTLENG
               IF (W(K+1,I).NE.0) THEN
                   SCALES(K,I) = - W(K+2,I)/W(K+1,I)
               ELSE
                   SCALES(K,I) = 100
               END IF
-              DO 30 J = 1,WTLENG
+              DO J = 1,WTLENG
                   WE(J) = W(K+2,J) + SCALES(K,I)*W(K+1,J)
-30            CONTINUE
+              END DO
               NORMS(K,I) = 0
-              DO 40 J = 1,WTLENG
+              DO J = 1,WTLENG
                   NORMS(K,I) = NORMS(K,I) + RULPTS(J)*ABS(WE(J))
-40            CONTINUE
+              END DO
               NORMS(K,I) = 2**NDIM/NORMS(K,I)
-50        CONTINUE
-100   CONTINUE
-      RETURN
+          END DO
+      END DO
 C
 C***END DINHRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE D132RE(WTLENG,W,G,ERRCOF,RULPTS)
 C***BEGIN PROLOGUE D132RE
 C***AUTHOR   Jarle Berntsen, EDB-senteret,
@@ -1361,17 +1331,19 @@ C***FIRST EXECUTABLE STATEMENT D132RE
 C
 C   Assign values to W.
 C
-      DO 10 I = 1,14
-          DO 10 J = 1,5
+      DO I = 1,14
+          DO J = 1,5
               W(J,I) = DIM2W(I,J)
-10    CONTINUE
+          END DO
+      END DO
 C
 C   Assign values to G.
 C
-      DO 20 I = 1,2
-          DO 20 J = 1,14
+      DO I = 1,2
+          DO J = 1,14
               G(I,J) = 0
-20    CONTINUE
+          END DO
+      END DO
       G(1,2) = DIM2G(1)
       G(1,3) = DIM2G(2)
       G(1,4) = DIM2G(3)
@@ -1397,9 +1369,9 @@ C
 C   Assign values to RULPTS.
 C
       RULPTS(1) = 1
-      DO 30 I = 2,11
+      DO I = 2,11
           RULPTS(I) = 4
-30    CONTINUE
+      END DO
       RULPTS(12) = 8
       RULPTS(13) = 8
       RULPTS(14) = 8
@@ -1415,8 +1387,9 @@ C
 C
 C***END D132RE
 C
-      RETURN
-      END
+
+      END SUBROUTINE
+
       SUBROUTINE D113RE(WTLENG,W,G,ERRCOF,RULPTS)
 C***BEGIN PROLOGUE D113RE
 C***AUTHOR   Jarle Berntsen, EDB-senteret,
@@ -1531,17 +1504,19 @@ C***FIRST EXECUTABLE STATEMENT D113RE
 C
 C   Assign values to W.
 C
-      DO 10 I = 1,13
-          DO 10 J = 1,5
+      DO I = 1,13
+          DO J = 1,5
               W(J,I) = DIM3W(I,J)
-10    CONTINUE
+          END DO
+      END DO
 C
 C   Assign values to G.
 C
-      DO 20 I = 1,3
-          DO 20 J = 1,13
+      DO I = 1,3
+          DO J = 1,13
               G(I,J) = 0
-20    CONTINUE
+          END DO
+      END DO
       G(1,2) = DIM3G(1)
       G(1,3) = DIM3G(2)
       G(1,4) = DIM3G(3)
@@ -1594,8 +1569,8 @@ C
 C
 C***END D113RE
 C
-      RETURN
-      END
+      END SUBROUTINE
+
       SUBROUTINE D09HRE(NDIM,WTLENG,W,G,ERRCOF,RULPTS)
 C***BEGIN PROLOGUE D09HRE
 C***KEYWORDS basic integration rule, degree 9
@@ -1652,15 +1627,9 @@ C
 C
 C     Initialize generators, weights and RULPTS
 C
-      DO 30 J = 1,WTLENG
-          DO 10 I = 1,NDIM
-              G(I,J) = 0
-10        CONTINUE
-          DO 20 I = 1,5
-              W(I,J) = 0
-20        CONTINUE
-          RULPTS(J) = 2*NDIM
-30    CONTINUE
+      G = 0
+      W = 0
+      RULPTS = 2*NDIM
       TWONDM = 2**NDIM
       RULPTS(WTLENG) = TWONDM
       IF (NDIM.GT.2) RULPTS(8) = (4*NDIM* (NDIM-1)* (NDIM-2))/3
@@ -1759,9 +1728,9 @@ C
       LAM2 = SQRT(LAM2)
       LAM3 = SQRT(LAM3)
       LAMP = SQRT(LAMP)
-      DO 40 I = 1,NDIM
+      DO I = 1,NDIM
           G(I,WTLENG) = LAM0
-40    CONTINUE
+      END DO
       IF (NDIM.GT.2) THEN
           G(1,8) = LAM1
           G(2,8) = LAM1
@@ -1781,16 +1750,16 @@ C     The null rule weights are computed from differences between
 C     the degree 9 rule weights and lower degree rule weights.
 C
       W(1,1) = TWONDM
-      DO 70 J = 2,5
-          DO 50 I = 2,WTLENG
+      DO J = 2,5
+          DO I = 2,WTLENG
               W(J,I) = W(J,I) - W(1,I)
               W(J,1) = W(J,1) - RULPTS(I)*W(J,I)
-50        CONTINUE
-70    CONTINUE
-      DO 80 I = 2,WTLENG
+          END DO
+      END DO
+      DO I = 2,WTLENG
           W(1,I) = TWONDM*W(1,I)
           W(1,1) = W(1,1) - RULPTS(I)*W(1,I)
-80    CONTINUE
+      END DO
 C
 C     Set error coefficients
 C
@@ -1803,7 +1772,8 @@ C
 C
 C***END D09HRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE D07HRE(NDIM,WTLENG,W,G,ERRCOF,RULPTS)
 C***BEGIN PROLOGUE D07HRE
 C***KEYWORDS basic integration rule, degree 7
@@ -1861,15 +1831,15 @@ C
 C
 C     Initialize generators, weights and RULPTS
 C
-      DO 30 J = 1,WTLENG
-          DO 10 I = 1,NDIM
+      DO J = 1,WTLENG
+          DO I = 1,NDIM
               G(I,J) = 0
-10        CONTINUE
-          DO 20 I = 1,5
+          END DO
+          DO I = 1,5
               W(I,J) = 0
-20        CONTINUE
+          END DO
           RULPTS(J) = 2*NDIM
-30    CONTINUE
+      END DO
       TWONDM = 2**NDIM
       RULPTS(WTLENG) = TWONDM
       RULPTS(WTLENG-1) = 2*NDIM* (NDIM-1)
@@ -1919,9 +1889,7 @@ C
       LAM1 = SQRT(LAM1)
       LAM2 = SQRT(LAM2)
       LAMP = SQRT(LAMP)
-      DO 40 I = 1,NDIM
-          G(I,WTLENG) = LAM0
-40    CONTINUE
+      G(:,WTLENG) = LAM0
       G(1,WTLENG-1) = LAM1
       G(2,WTLENG-1) = LAM1
       G(1,WTLENG-4) = LAM2
@@ -1933,16 +1901,16 @@ C     The null rule weights are computed from differences between
 C     the degree 7 rule weights and lower degree rule weights.
 C
       W(1,1) = TWONDM
-      DO 70 J = 2,5
-          DO 50 I = 2,WTLENG
+      DO J = 2,5
+          DO I = 2,WTLENG
               W(J,I) = W(J,I) - W(1,I)
               W(J,1) = W(J,1) - RULPTS(I)*W(J,I)
-50        CONTINUE
-70    CONTINUE
-      DO 80 I = 2,WTLENG
+          END DO
+      END DO
+      DO I = 2,WTLENG
           W(1,I) = TWONDM*W(1,I)
           W(1,1) = W(1,1) - RULPTS(I)*W(1,I)
-80    CONTINUE
+      END DO
 C
 C     Set error coefficients
 C
@@ -1955,7 +1923,8 @@ C
 C
 C***END D07HRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE DRLHRE(NDIM,CENTER,HWIDTH,WTLENG,G,W,ERRCOF,NUMFUN,
      +                  FUNSUB,SCALES,NORMS,X,NULL,BASVAL,RGNERR,DIRECT)
 C***BEGIN PROLOGUE DRLHRE
@@ -2074,21 +2043,21 @@ C       fourth divided differences are accumulated in rule arrays.
 C
       RGNVOL = 1
       DIVAXN = 1
-      DO 10 I = 1,NDIM
+      DO I = 1,NDIM
           RGNVOL = RGNVOL*HWIDTH(I)
           X(I) = CENTER(I)
           IF (HWIDTH(I).GT.HWIDTH(DIVAXN)) DIVAXN = I
-10    CONTINUE
+      END DO
       CALL FUNSUB(NDIM,X,NUMFUN,RGNERR)
-      DO 30 J = 1,NUMFUN
+      DO J = 1,NUMFUN
           BASVAL(J) = W(1,1)*RGNERR(J)
-          DO 20 K = 1,4
+          DO K = 1,4
               NULL(J,K) = W(K+1,1)*RGNERR(J)
-20        CONTINUE
-30    CONTINUE
+          END DO
+      END DO
       DIFMAX = 0
       RATIO = (G(1,3)/G(1,2))**2
-      DO 60 I = 1,NDIM
+      DO I = 1,NDIM
           X(I) = CENTER(I) - HWIDTH(I)*G(1,2)
           CALL FUNSUB(NDIM,X,NUMFUN,NULL(1,5))
           X(I) = CENTER(I) + HWIDTH(I)*G(1,2)
@@ -2099,7 +2068,7 @@ C
           CALL FUNSUB(NDIM,X,NUMFUN,NULL(1,8))
           X(I) = CENTER(I)
           DIFSUM = 0
-          DO 50 J = 1,NUMFUN
+          DO J = 1,NUMFUN
               FRTHDF = 2* (1-RATIO)*RGNERR(J) - (NULL(J,7)+NULL(J,8)) +
      +                 RATIO* (NULL(J,5)+NULL(J,6))
 C
@@ -2107,51 +2076,51 @@ C           Ignore differences below roundoff
 C
               IF (RGNERR(J)+FRTHDF/4.NE.RGNERR(J)) DIFSUM = DIFSUM +
      +            ABS(FRTHDF)
-              DO 40 K = 1,4
+              DO K = 1,4
                   NULL(J,K) = NULL(J,K) + W(K+1,2)*
      +                        (NULL(J,5)+NULL(J,6)) +
      +                        W(K+1,3)* (NULL(J,7)+NULL(J,8))
-40            CONTINUE
+              END DO
               BASVAL(J) = BASVAL(J) + W(1,2)* (NULL(J,5)+NULL(J,6)) +
      +                    W(1,3)* (NULL(J,7)+NULL(J,8))
-50        CONTINUE
+          END DO
           IF (DIFSUM.GT.DIFMAX) THEN
               DIFMAX = DIFSUM
               DIVAXN = I
           END IF
-60    CONTINUE
+      END DO
       DIRECT = DIVAXN
 C
 C    Finish computing the rule values.
 C
-      DO 90 I = 4,WTLENG
+      DO I = 4,WTLENG
           CALL DFSHRE(NDIM,CENTER,HWIDTH,X,G(1,I),NUMFUN,FUNSUB,RGNERR,
      +                NULL(1,5))
-          DO 80 J = 1,NUMFUN
+          DO J = 1,NUMFUN
               BASVAL(J) = BASVAL(J) + W(1,I)*RGNERR(J)
-              DO 70 K = 1,4
+              DO K = 1,4
                   NULL(J,K) = NULL(J,K) + W(K+1,I)*RGNERR(J)
-70            CONTINUE
-80        CONTINUE
-90    CONTINUE
+              END DO
+          END DO
+      END DO
 C
 C    Compute errors.
 C
-      DO 130 J = 1,NUMFUN
+      DO J = 1,NUMFUN
 C
 C    We search for the null rule, in the linear space spanned by two
 C    successive null rules in our sequence, which gives the greatest
 C    error estimate among all normalized (1-norm) null rules in this
 C    space.
 C
-          DO 110 I = 1,3
+          DO I = 1,3
               SEARCH = 0
-              DO 100 K = 1,WTLENG
+              DO K = 1,WTLENG
                   SEARCH = MAX(SEARCH,ABS(NULL(J,I+1)+SCALES(I,
      +                     K)*NULL(J,I))*NORMS(I,K))
-100           CONTINUE
+              END DO
               NULL(J,I) = SEARCH
-110       CONTINUE
+          END DO
           IF (ERRCOF(1)*NULL(J,1).LE.NULL(J,2) .AND.
      +        ERRCOF(2)*NULL(J,2).LE.NULL(J,3)) THEN
               RGNERR(J) = ERRCOF(3)*NULL(J,1)
@@ -2160,11 +2129,12 @@ C
           END IF
           RGNERR(J) = RGNVOL*RGNERR(J)
           BASVAL(J) = RGNVOL*BASVAL(J)
-130   CONTINUE
+      END DO
 C
 C***END DRLHRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE DFSHRE(NDIM,CENTER,HWIDTH,X,G,NUMFUN,FUNSUB,FULSMS,
      +                  FUNVLS)
 C***BEGIN PROLOGUE DFSHRE
@@ -2233,57 +2203,52 @@ C
 C
 C***FIRST EXECUTABLE STATEMENT DFSHRE
 C
-      DO 10 J = 1,NUMFUN
-          FULSMS(J) = 0
-10    CONTINUE
+      FULSMS = 0
 C
 C     Compute centrally symmetric sum for permutation of G
 C
-20    DO 30 I = 1,NDIM
-          X(I) = CENTER(I) + G(I)*HWIDTH(I)
-30    CONTINUE
+20    X = CENTER + G*HWIDTH
 40    CALL FUNSUB(NDIM,X,NUMFUN,FUNVLS)
-      DO 50 J = 1,NUMFUN
-          FULSMS(J) = FULSMS(J) + FUNVLS(J)
-50    CONTINUE
-      DO 60 I = 1,NDIM
+      FULSMS = FULSMS + FUNVLS
+      DO I = 1,NDIM
           G(I) = - G(I)
           X(I) = CENTER(I) + G(I)*HWIDTH(I)
           IF (G(I).LT.0) GO TO 40
-60    CONTINUE
+      END DO
 C
 C       Find next distinct permutation of G and loop back for next sum.
 C       Permutations are generated in reverse lexicographic order.
 C
-      DO 80 I = 2,NDIM
+      DO I = 2,NDIM
           IF (G(I-1).GT.G(I)) THEN
               GI = G(I)
               IXCHNG = I - 1
-              DO 70 L = 1, (I-1)/2
+              DO L = 1, (I-1)/2
                   GL = G(L)
                   G(L) = G(I-L)
                   G(I-L) = GL
                   IF (GL.LE.GI) IXCHNG = IXCHNG - 1
                   IF (G(L).GT.GI) LXCHNG = L
-70            CONTINUE
+              END DO
               IF (G(IXCHNG).LE.GI) IXCHNG = LXCHNG
               G(I) = G(IXCHNG)
               G(IXCHNG) = GI
               GO TO 20
           END IF
-80    CONTINUE
+      END DO
 C
 C     Restore original order to generators
 C
-      DO 90 I = 1,NDIM/2
+      DO I = 1,NDIM/2
           GI = G(I)
           G(I) = G(NDIM-I+1)
           G(NDIM-I+1) = GI
-90    CONTINUE
+      END DO
 C
 C***END DFSHRE
 C
-      END
+      END SUBROUTINE
+
       SUBROUTINE DTRHRE(DVFLAG,NDIM,NUMFUN,SBRGNS,VALUES,ERRORS,CENTRS,
      +                  HWIDTS,GREATE,ERROR,VALUE,CENTER,HWIDTH,DIR)
 C***BEGIN PROLOGUE DTRHRE
@@ -2363,14 +2328,10 @@ C   Save values to be stored in their correct place in the heap.
 C
       GREAT = GREATE(SBRGNS)
       DIRECT = DIR(SBRGNS)
-      DO 5 J = 1,NUMFUN
-          ERROR(J) = ERRORS(J,SBRGNS)
-          VALUE(J) = VALUES(J,SBRGNS)
-5     CONTINUE
-      DO 10 J = 1,NDIM
-          CENTER(J) = CENTRS(J,SBRGNS)
-          HWIDTH(J) = HWIDTS(J,SBRGNS)
-10    CONTINUE
+      ERROR = ERRORS(:,SBRGNS)
+      VALUE = VALUES(:,SBRGNS)
+      CENTER = CENTRS(:,SBRGNS)
+      HWIDTH = HWIDTS(:,SBRGNS)
 C
 C    If DVFLAG = 1, we will remove the region
 C    with greatest estimated error from the heap.
@@ -2397,15 +2358,11 @@ C
 C   Move the values at position subtmp up the heap.
 C
                   GREATE(SUBRGN) = GREATE(SUBTMP)
-                  DO 25 J = 1,NUMFUN
-                      ERRORS(J,SUBRGN) = ERRORS(J,SUBTMP)
-                      VALUES(J,SUBRGN) = VALUES(J,SUBTMP)
-25                CONTINUE
+                  ERRORS(:,SUBRGN) = ERRORS(:,SUBTMP)
+                  VALUES(:,SUBRGN) = VALUES(:,SUBTMP)
                   DIR(SUBRGN) = DIR(SUBTMP)
-                  DO 30 J = 1,NDIM
-                      CENTRS(J,SUBRGN) = CENTRS(J,SUBTMP)
-                      HWIDTS(J,SUBRGN) = HWIDTS(J,SUBTMP)
-30                CONTINUE
+                  CENTRS(:,SUBRGN) = CENTRS(:,SUBTMP)
+                  HWIDTS(:,SUBRGN) = HWIDTS(:,SUBTMP)
                   SUBRGN = SUBTMP
                   GO TO 20
               END IF
@@ -2426,15 +2383,11 @@ C
 C   Move the values at position subtmp down the heap.
 C
                   GREATE(SUBRGN) = GREATE(SUBTMP)
-                  DO 45 J = 1,NUMFUN
-                      ERRORS(J,SUBRGN) = ERRORS(J,SUBTMP)
-                      VALUES(J,SUBRGN) = VALUES(J,SUBTMP)
-45                CONTINUE
+                  ERRORS(:,SUBRGN) = ERRORS(:,SUBTMP)
+                  VALUES(:,SUBRGN) = VALUES(:,SUBTMP)
                   DIR(SUBRGN) = DIR(SUBTMP)
-                  DO 50 J = 1,NDIM
-                      CENTRS(J,SUBRGN) = CENTRS(J,SUBTMP)
-                      HWIDTS(J,SUBRGN) = HWIDTS(J,SUBTMP)
-50                CONTINUE
+                  CENTRS(:,SUBRGN) = CENTRS(:,SUBTMP)
+                  HWIDTS(:,SUBRGN) = HWIDTS(:,SUBTMP)
                   SUBRGN = SUBTMP
                   GO TO 40
               END IF
@@ -2445,18 +2398,13 @@ C    Insert the saved values in their correct places.
 C
       IF (SBRGNS.GT.0) THEN
           GREATE(SUBRGN) = GREAT
-          DO 55 J = 1,NUMFUN
-              ERRORS(J,SUBRGN) = ERROR(J)
-              VALUES(J,SUBRGN) = VALUE(J)
-55        CONTINUE
+          ERRORS(:,SUBRGN) = ERROR
+          VALUES(:,SUBRGN) = VALUE
           DIR(SUBRGN) = DIRECT
-          DO 60 J = 1,NDIM
-              CENTRS(J,SUBRGN) = CENTER(J)
-              HWIDTS(J,SUBRGN) = HWIDTH(J)
-60        CONTINUE
+          CENTRS(:,SUBRGN) = CENTER
+          HWIDTS(:,SUBRGN) = HWIDTH
       END IF
 C
 C***END DTRHRE
 C
-      RETURN
-      END
+      END SUBROUTINE

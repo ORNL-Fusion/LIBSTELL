@@ -54,24 +54,24 @@ C  ier -- completion code:  0 means OK
 C-------------------
 C  local:
 C
-      integer i                         ! cell index
+      integer, dimension(1) :: i                         ! cell index
 C
 C  normalized displacement from (x(i)) corner of cell.
 C    xparam=0 @x(i)  xparam=1 @x(i+1)
 C
-      REAL*8 xparam
+      REAL*8, dimension(1) :: xparam
 C
 C  cell dimensions and
 C  inverse cell dimensions hxi = 1/(x(i+1)-x(i))
 C
-      REAL*8 hx
-      REAL*8 hxi
+      REAL*8, dimension(1) :: hx
+      REAL*8, dimension(1) :: hxi
 C
 C  0 .le. xparam .le. 1
 C
 C---------------------------------------------------------------------
 C
-      call r8herm1x(xget,x,nx,ilinx,i,xparam,hx,hxi,ier)
+      call r8herm1x(xget,x,nx,ilinx,i(1),xparam(1),hx(1),hxi(1),ier)
       if(ier.ne.0) return
 c
       call r8herm1fcn(ict,1,1,fval,i,xparam,hx,hxi,f,nx)

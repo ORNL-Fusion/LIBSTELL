@@ -9,11 +9,10 @@
 !*******************************************************************************
 
       MODULE mpi_inc
+#if defined(MPI_OPT)
+      USE mpi
+#endif
 
       IMPLICIT NONE
-
-#if defined(MPI_OPT)
-      INCLUDE 'mpif.h'
-#endif
 
       END MODULE
