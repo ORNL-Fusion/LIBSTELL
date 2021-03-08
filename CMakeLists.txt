@@ -46,7 +46,8 @@ if (MPI_Fortran_FOUND)
     target_link_libraries (stell INTERFACE MPI::MPI_Fortran)
     set_target_properties (stell PROPERTIES
                            MPIEXEC_EXECUTABLE "${MPIEXEC_EXECUTABLE}"
-                           MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}")
+                           MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}"
+                           MPIEXEC_MAX_NUMPROCS "${MPIEXEC_MAX_NUMPROCS}")
 endif ()
 
 if (NetCDF_FOUND)
