@@ -386,7 +386,7 @@ C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       REAL(rprec) :: xc_opt(nvar), r_cyl_out(3), fmin0
-      INTEGER     :: iflag, itry, nfe_out
+      INTEGER     :: itry, nfe_out
 
 C-----------------------------------------------
 C   Variables to communicate with internal subroutines newt2d and get_flxcoord
@@ -498,11 +498,8 @@ C-----------------------------------------------
       IF (PRESENT(ru) .or. PRESENT(zu) .or. PRESENT(rv) .or.                   &
      &                                       PRESENT(zv)) THEN
          IF (info .eq. 0) THEN
-             CALL flx2cyl(rzl_in, c_flx, r_cyl_out, context%ns,                &
-     &                    context%ntor, context%mpol, context%ntmax,           &
-     &                    context%lthreed, context%lasym, iflag,               &
-     &                    MSCALE=context%mscale, NSCALE=context%nscale,        &
-     &                    RU=ru, ZU=zu, RV=rv, ZV=zv)
+             CALL get_flxcoord(context, r_cyl_out, c_flx,                      &
+     &                         RU=ru, ZU=zu, RV=rv, ZV=zv)
          ELSE    ! insure that optional arguments are assigned. JDH 2014-03-11
             IF (PRESENT(ru)) ru = 0
             IF (PRESENT(zu)) zu = 0
@@ -675,7 +672,7 @@ C-----------------------------------------------
 
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-      SUBROUTINE get_flxcoord(context, x1, c_flx, ru, zu)  ! Internal subroutine to cyl2flx
+      SUBROUTINE get_flxcoord(context, x1, c_flx, ru, zu, rv, zv)  ! Internal subroutine to cyl2flx
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
@@ -684,6 +681,8 @@ C-----------------------------------------------
       REAL(rprec), INTENT(in)             :: c_flx(3)
       REAL(rprec), INTENT(out), OPTIONAL  :: ru
       REAL(rprec), INTENT(out), OPTIONAL  :: zu
+      REAL(rprec), INTENT(out), OPTIONAL  :: rv
+      REAL(rprec), INTENT(out), OPTIONAL  :: zv
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
@@ -694,12 +693,12 @@ C-----------------------------------------------
      &                context%ntor, context%mpol, context%ntmax,               &
      &                context%lthreed, context%lasym, iflag,                   &
      &                MSCALE=context%mscale, NSCALE=context%nscale,            &
-     &                RU=ru, ZU=zu)
+     &                RU=ru, ZU=zu, RV=rv, ZV=zv)
       ELSE
          CALL flx2cyl(context%rzl_array, c_flx, x1, context%ns,                &
      &                context%ntor, context%mpol, context%ntmax,               &
      &                context%lthreed, context%lasym, iflag,                   &
-     &                RU=ru, ZU=zu)
+     &                RU=ru, ZU=zu, RV=rv, ZV=zv)
       END IF
 
       END SUBROUTINE get_flxcoord  ! Internal subroutine to cyl2flx
