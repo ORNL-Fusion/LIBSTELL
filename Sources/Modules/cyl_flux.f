@@ -481,7 +481,7 @@ C-----------------------------------------------
 !        PRINT *,' ITRY = ', itry+1,' FMIN = ', fmin
             
       END DO
-         
+
       c_flx(1:2) = xc_opt(1:2)
       c_flx(3) = context%phi_target
 !SPH      IF (info.eq.0 .and. c_flx(1).gt.one) c_flx(1) = one
@@ -494,12 +494,6 @@ C-----------------------------------------------
 !
 !     COMPUTE Ru, Zu, Rv, Zv IF REQUIRED
 !
-!      IF ((PRESENT(ru) .or. PRESENT(zu) .or. 
-!     1     PRESENT(rv) .or. PRESENT(zv)) .and. info.eq.0)
-!     2    CALL flx2cyl(rzl_in, c_flx, r_cyl_out, ns_loc, ntor_loc, 
-!     3         mpol_loc, ntmax_loc, lthreed_loc, lasym_loc, 
-!     4         iflag, MSCALE=mscale, NSCALE=nscale, 
-!     5         RU=ru, ZU=zu, RV=rv, ZV=zv)
 
       IF (PRESENT(ru) .or. PRESENT(zu) .or. PRESENT(rv) .or.                   &
      &                                       PRESENT(zv)) THEN
