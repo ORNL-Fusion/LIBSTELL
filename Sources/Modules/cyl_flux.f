@@ -4,6 +4,39 @@
       IMPLICIT NONE
 
 !-------------------------------------------------------------------------------
+!>  Structure to house needed internal state for cyl2flux
+!-------------------------------------------------------------------------------
+      TYPE :: cyl_flux_context
+!>  Fourier coefficents.
+         REAL (rprec), DIMENSION(:,:,:,:), POINTER :: rzl_array
+!>  Use scaling.
+         LOGICAL                                   :: lscale
+!>  Number of radial surfaces.
+         INTEGER                                   :: ns
+!>  Number of toroidal modes.
+         INTEGER                                   :: ntor
+!>  Number of poloidal modes.
+         INTEGER                                   :: mpol
+!>
+         INTEGER                                   :: ntmax
+!>  Three dimensional.
+         LOGICAL                                   :: lthreed
+!>  Asymmetric
+         LOGICAL                                   :: lasym
+!>  Poloidal scale.
+         REAL (rprec), DIMENSION(:), POINTER       :: mscale
+!>  Toroidal scale.
+         REAL (rprec), DIMENSION(:), POINTER       :: nscale
+!>
+         REAL (rprec)                              :: fnorm
+!>  Real space radial position target.
+         REAL (rprec)                              :: r_target
+!>  Real space torodial angle target.
+         REAL (rprec)                              :: phi_target
+!>  Real space vertial position target.
+         REAL (rprec)                              :: z_target
+      END TYPE
+!-------------------------------------------------------------------------------
 !  Module for coordinate conversion, cylindrical <- -> VMEC flux
 !  CONTAINS two subroutines:
 !     flx2cyl - convert from VMEC flux to cylindrical - inverse Fourier Transform
@@ -358,11 +391,7 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   Variables to communicate with internal subroutines newt2d and get_flxcoord
 C-----------------------------------------------
-      INTEGER     :: ns_loc, ntmax_loc, mpol_loc, ntor_loc
-      REAL(rprec) :: r_target, phi_target, z_target, fnorm
-      REAL(rprec), POINTER :: rzl_array(:,:,:,:)
-      REAL(rprec), POINTER :: mscale_loc(:), nscale_loc(:)
-      LOGICAL :: lthreed_loc, lasym_loc, lscale
+      TYPE (cyl_flux_context) :: context
 
 C-----------------------------------------------
 !     LOCAL PARAMETERS:
@@ -399,26 +428,35 @@ C-----------------------------------------------
 !                 on input, initial guess (recommend magnetic axis if "cold" start)
 !                 on output, s, u values corresponding to r_cyl
 C-----------------------------------------------
-!     Initialize global variables
-      rzl_array => rzl_in
-      lthreed_loc = lthreed_in;  lasym_loc = lasym_in
-      mpol_loc = mpol_in;  ntor_loc = ntor_in
-      ns_loc = ns_in; ntmax_loc = ntmax_in
-      lscale = PRESENT(mscale)
-      IF (lscale) THEN
-         mscale_loc => mscale;  nscale_loc => nscale
+!     Initialize context
+      context%rzl_array => rzl_in
+      context%lthreed = lthreed_in;
+      context%lasym = lasym_in
+      context%mpol = mpol_in
+      context%ntor = ntor_in
+      context%ns = ns_in
+      context%ntmax = ntmax_in
+      context%lscale = PRESENT(mscale)
+      IF (context%lscale) THEN
+         context%mscale => mscale
+         context%nscale => nscale
       END IF
-      r_target = r_cyl(1); phi_target = r_cyl(2);  z_target = r_cyl(3)
+
+      context%r_target = r_cyl(1)
+      context%phi_target = r_cyl(2)
+      context%z_target = r_cyl(3)
 
 !     Initialize local variables
       xc_opt(1) = c_flx(1); xc_opt(2) = c_flx(2)
 
 !     Avoid exact magnetic axis, which is singular point
-      IF (c_flx(1) .eq. zero) xc_opt(1) = one/(ns_loc-1)   
+      IF (c_flx(1) .eq. zero) xc_opt(1) = one/(context%ns - 1)
 
-      fnorm = r_target**2 + z_target**2
-      IF (fnorm .lt. EPSILON(fnorm)) fnorm = 1
-      fnorm = one/fnorm
+      context%fnorm = context%r_target**2 + context%z_target**2
+      IF (context%fnorm .lt. EPSILON(context%fnorm)) THEN
+         context%fnorm = one
+      END IF
+      context%fnorm = one/context%fnorm
 
 
       nfe = 0
@@ -426,7 +464,7 @@ C-----------------------------------------------
 
       DO itry = 1, 4
 
-         CALL newt2d(xc_opt, fmin, ftol, nfe_out, nvar, info)
+         CALL newt2d(context, xc_opt, fmin, ftol, nfe_out, nvar, info)
          nfe = nfe + nfe_out
 
          IF (fmin.le.ftol .or. info.eq.-3) EXIT
@@ -444,7 +482,8 @@ C-----------------------------------------------
             
       END DO
          
-      c_flx(1) = xc_opt(1); c_flx(2) = xc_opt(2); c_flx(3) = phi_target
+      c_flx(1:2) = xc_opt(1:2)
+      c_flx(3) = context%phi_target
 !SPH      IF (info.eq.0 .and. c_flx(1).gt.one) c_flx(1) = one
 
       c_flx(2) = MOD(c_flx(2), twopi)
@@ -465,10 +504,11 @@ C-----------------------------------------------
       IF (PRESENT(ru) .or. PRESENT(zu) .or. PRESENT(rv) .or.                   &
      &                                       PRESENT(zv)) THEN
          IF (info .eq. 0) THEN
-             CALL flx2cyl(rzl_in, c_flx, r_cyl_out, ns_loc, ntor_loc,          & 
-     &          mpol_loc, ntmax_loc, lthreed_loc, lasym_loc,                   & 
-     &          iflag, MSCALE=mscale, NSCALE=nscale,                           & 
-     &          RU=ru, ZU=zu, RV=rv, ZV=zv)
+             CALL flx2cyl(rzl_in, c_flx, r_cyl_out, context%ns,                &
+     &                    context%ntor, context%mpol, context%ntmax,           &
+     &                    context%lthreed, context%lasym, iflag,               &
+     &                    MSCALE=context%mscale, NSCALE=context%nscale,        &
+     &                    RU=ru, ZU=zu, RV=rv, ZV=zv)
          ELSE    ! insure that optional arguments are assigned. JDH 2014-03-11
             IF (PRESENT(ru)) ru = 0
             IF (PRESENT(zu)) zu = 0
@@ -477,15 +517,16 @@ C-----------------------------------------------
          ENDIF
       ENDIF
 
-      CONTAINS ! internal subprograms newt2d and get_flxcoord
+      END SUBROUTINE cyl2flx
     
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-      SUBROUTINE newt2d(xc_opt, fmin, ftol, nfe, nvar, iflag)
+      SUBROUTINE newt2d(context, xc_opt, fmin, ftol, nfe, nvar, iflag)
       IMPLICIT NONE
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
+      TYPE (cyl_flux_context), INTENT(in) :: context
       INTEGER, INTENT(in) :: nvar
       INTEGER, INTENT(out) :: nfe, iflag
       REAL(rprec), INTENT(inout) :: xc_opt(nvar)
@@ -530,11 +571,11 @@ C-----------------------------------------------
       eps0 = SQRT(EPSILON(eps))
       xc_min = xc_opt
 
-      c_flx(3) = phi_target
+      c_flx(3) = context%phi_target
       fmin0 = 1.E10_dp
       factor = 1
       nfe = 0
-      edge_value = one + one/(ns_loc-1)
+      edge_value = one + one/(context%ns - 1)
       isgt1 = 0
 
       DO ieval = 1, niter
@@ -546,7 +587,7 @@ C-----------------------------------------------
          c_flx(1) = sflux;  c_flx(2) = uflux
 
 !        COMPUTE R,Z, Ru, Zu
-         CALL get_flxcoord(x0, c_flx, ru=ru1, zu=zu1)
+         CALL get_flxcoord(context, x0, c_flx, ru=ru1, zu=zu1)
          xu(1) = ru1; xu(3) = zu1
 
 !        MAKE SURE sflux IS LARGE ENOUGH
@@ -561,13 +602,13 @@ C-----------------------------------------------
          eps = ABS(eps)
          IF (sflux .ge. 1-eps) eps = -eps
          c_flx(1) = sflux + eps
-         CALL get_flxcoord(r_cyl_out, c_flx)
+         CALL get_flxcoord(context, r_cyl_out, c_flx)
          xs = (r_cyl_out - x0)/eps
          c_flx(1) = sflux
 
-         x0(1) = x0(1) - r_target
-         x0(3) = x0(3) - z_target
-         fmin = (x0(1)**2 + x0(3)**2)*fnorm
+         x0(1) = x0(1) - context%r_target
+         x0(3) = x0(3) - context%z_target
+         fmin = (x0(1)**2 + x0(3)**2)*context%fnorm
 
          IF (fmin .gt. fmin0) THEN
             factor = (2*factor)/3
@@ -584,7 +625,7 @@ C-----------------------------------------------
 
 !           NEWTON STEP
             tau = xu(1)*xs(3) - xu(3)*xs(1)
-            IF (ABS(tau) .le. ABS(eps)*r_target**2) THEN
+            IF (ABS(tau) .le. ABS(eps)*context%r_target**2) THEN
                iflag = -2
                EXIT
             END IF
@@ -640,30 +681,33 @@ C-----------------------------------------------
 
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-      SUBROUTINE get_flxcoord(x1, c_flx, ru, zu)  ! Internal subroutine to cyl2flx
+      SUBROUTINE get_flxcoord(context, x1, c_flx, ru, zu)  ! Internal subroutine to cyl2flx
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
-      REAL(rprec), INTENT(out) :: x1(3)
-      REAL(rprec), INTENT(in)  :: c_flx(3)
-      REAL(rprec), INTENT(out), OPTIONAL :: ru, zu
+      TYPE (cyl_flux_context), INTENT(in) :: context
+      REAL(rprec), INTENT(out)            :: x1(3)
+      REAL(rprec), INTENT(in)             :: c_flx(3)
+      REAL(rprec), INTENT(out), OPTIONAL  :: ru
+      REAL(rprec), INTENT(out), OPTIONAL  :: zu
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
       INTEGER :: iflag
 C-----------------------------------------------
-      IF (lscale) THEN
-         CALL flx2cyl(rzl_array, c_flx, x1, ns_loc, ntor_loc, mpol_loc, 
-     1              ntmax_loc, lthreed_loc, lasym_loc, iflag, 
-     2              MSCALE=mscale_loc, NSCALE=nscale_loc, RU=ru, ZU=zu)
+      IF (context%lscale) THEN
+         CALL flx2cyl(context%rzl_array, c_flx, x1, context%ns,                &
+     &                context%ntor, context%mpol, context%ntmax,               &
+     &                context%lthreed, context%lasym, iflag,                   &
+     &                MSCALE=context%mscale, NSCALE=context%nscale,            &
+     &                RU=ru, ZU=zu)
       ELSE
-         CALL flx2cyl(rzl_array, c_flx, x1, ns_loc, ntor_loc, mpol_loc, 
-     1              ntmax_loc, lthreed_loc, lasym_loc, iflag, 
-     2              RU=ru, ZU=zu)
+         CALL flx2cyl(context%rzl_array, c_flx, x1, context%ns,                &
+     &                context%ntor, context%mpol, context%ntmax,               &
+     &                context%lthreed, context%lasym, iflag,                   &
+     &                RU=ru, ZU=zu)
       END IF
 
       END SUBROUTINE get_flxcoord  ! Internal subroutine to cyl2flx
-
-      END SUBROUTINE cyl2flx
 
       END MODULE cyl_flux
