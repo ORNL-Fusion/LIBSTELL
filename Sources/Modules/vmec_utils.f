@@ -54,10 +54,16 @@
 C-----------------------------------------------
 C   D u m m y   A r g u m e n t s
 C-----------------------------------------------
-      INTEGER, OPTIONAL, INTENT(out) :: info
-      REAL(rprec), INTENT(in)  :: R1, Z1, Phi
-      REAL(rprec), INTENT(out) :: Br, Bphi, Bz
-      REAL(rprec), INTENT(out), OPTIONAL :: sflx, uflx
+      INTEGER, OPTIONAL, INTENT(out)       :: info
+      REAL(rprec), INTENT(in)              :: R1
+      REAL(rprec), INTENT(in)              :: Z1
+      REAL(rprec), INTENT(in)              :: Phi
+      REAL(rprec), INTENT(out)             :: Br
+      REAL(rprec), INTENT(out)             :: Bphi
+      REAL(rprec), INTENT(out)             :: Bz
+      REAL(rprec), INTENT(inout), OPTIONAL :: sflx
+      REAL(rprec), INTENT(inout), OPTIONAL :: uflx
+
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
 C-----------------------------------------------
