@@ -10,7 +10,7 @@ Provides the following variables:
 
 # Find it manually.
 find_path (NetCDF_C_INCLUDE_DIR
-           NAMES netcdf.h netcdf.inc
+           NAMES netcdf.h
            DOC "netcdf C include directories")
 mark_as_advanced (NetCDF_C_INCLUDE_DIR)
 
