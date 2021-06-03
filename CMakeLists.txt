@@ -37,7 +37,7 @@ endif ()
 
 #  Fortran specific settings. The first setting tells the compiler to use the C
 #  preprocessor.
-target_compile_options (stell PUBLIC -cpp)
+target_compile_options (stell PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-cpp>)
 
 if (MPI_Fortran_FOUND)
     target_compile_options (stell PUBLIC -DMPI_OPT)
