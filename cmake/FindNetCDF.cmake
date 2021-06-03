@@ -9,10 +9,15 @@ Provides the following variables:
 #]==]
 
 # Find it manually.
-find_path (NetCDF_INCLUDE_DIR
+find_path (NetCDF_C_INCLUDE_DIR
            NAMES netcdf.h netcdf.inc
-           DOC "netcdf include directories")
-mark_as_advanced (NetCDF_INCLUDE_DIR)
+           DOC "netcdf C include directories")
+mark_as_advanced (NetCDF_C_INCLUDE_DIR)
+
+find_path (NetCDF_Fortran_INCLUDE_DIR
+           NAMES netcdf.inc
+           DOC "netcdf Fortran include directories")
+mark_as_advanced (NetCDF_Fortran_INCLUDE_DIR)
 
 find_library (NetCDF_C_LIBRARY
               NAMES netcdf
@@ -23,8 +28,8 @@ find_library (NetCDF_Fortran_LIBRARY
               DOC "netcdf Fortran library")
 mark_as_advanced (NetCDF_Fortran_LIBRARY)
 
-if (NetCDF_INCLUDE_DIR)
-    file (STRINGS "${NetCDF_INCLUDE_DIR}/netcdf_meta.h" _netcdf_version_lines
+if (NetCDF_C_INCLUDE_DIR)
+    file (STRINGS "${NetCDF_C_INCLUDE_DIR}/netcdf_meta.h" _netcdf_version_lines
           REGEX "#define[ \t]+NC_VERSION_(MAJOR|MINOR|PATCH|NOTE)")
     string (REGEX REPLACE ".*NC_VERSION_MAJOR *\([0-9]*\).*" "\\1" _netcdf_version_major "${_netcdf_version_lines}")
     string (REGEX REPLACE ".*NC_VERSION_MINOR *\([0-9]*\).*" "\\1" _netcdf_version_minor "${_netcdf_version_lines}")
@@ -40,29 +45,29 @@ endif ()
 
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (NetCDF
-                                   REQUIRED_VARS NetCDF_C_LIBRARY NetCDF_Fortran_LIBRARY NetCDF_INCLUDE_DIR
+                                   REQUIRED_VARS NetCDF_C_LIBRARY NetCDF_Fortran_LIBRARY NetCDF_C_INCLUDE_DIR NetCDF_Fortran_INCLUDE_DIR
                                    VERSION_VAR NetCDF_VERSION)
 
 if (NetCDF_FOUND)
-    set (NetCDF_INCLUDE_DIRS ${NetCDF_INCLUDE_DIR})
+    set (NetCDF_INCLUDE_DIRS ${NetCDF_C_INCLUDE_DIR} ${NetCDF_F_INCLUDE_DIR})
     set (NetCDF_LIBRARIES "${NetCDF_C_LIBRARY} ${NetCDF_Fortran_LIBRARY}")
 
     if (NOT TARGET NetCDF::NetCDF_C)
        add_library (NetCDF::NetCDF_C UNKNOWN IMPORTED)
        set_target_properties (NetCDF::NetCDF_C PROPERTIES
                               IMPORTED_LOCATION "${NetCDF_C_LIBRARY}"
-                              INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_INCLUDE_DIR})
+                              INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_C_INCLUDE_DIR})
     endif ()
     if (NOT TARGET NetCDF::NetCDF_Fortran)
        add_library (NetCDF::NetCDF_Fortran UNKNOWN IMPORTED)
        set_target_properties (NetCDF::NetCDF_Fortran PROPERTIES
                               IMPORTED_LOCATION "${NetCDF_Fortran_LIBRARY}"
-                              INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_INCLUDE_DIR})
+                              INTERFACE_INCLUDE_DIRECTORIES ${NetCDF_Fortran_INCLUDE_DIR})
     endif ()
 
     if (NOT TARGET NetCDF::NetCDF)
         add_library (NetCDF::NetCDF INTERFACE IMPORTED)
         target_link_libraries (NetCDF::NetCDF INTERFACE NetCDF::NetCDF_Fortran NetCDF::NetCDF_C)
-        target_include_directories (NetCDF::NetCDF INTERFACE ${NetCDF_INCLUDE_DIR})
+        target_include_directories (NetCDF::NetCDF INTERFACE ${NetCDF_INCLUDE_DIRS})
     endif ()
 endif ()
