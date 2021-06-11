@@ -550,6 +550,13 @@
 
       END DO
 
+!     Populate x*_nyq variables on older versions. If version_ was less than
+!     8.0 + eps_w, the CYCLE would skip setting the x*_nyq values.
+      IF (version_ .le. (8.0+eps_w)) THEN
+         xm_nyq = xm
+         xn_nyq = xm
+      END IF
+
 !     Compute current coefficients on full mesh
       IF (version_ .gt. (8.0+eps_w)) THEN
          CALL Compute_Currents(bsubsmnc, bsubsmns,                             &
