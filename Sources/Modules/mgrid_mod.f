@@ -148,12 +148,12 @@ C-----------------------------------------------
       INTEGER :: istat, ii
       CHARACTER(LEN=200) :: home_dir
       LOGICAL :: lgrid_exist, lfind
-      INTEGER :: mpi_comm
+      INTEGER :: mgrid_comm
 C-----------------------------------------------
 
 #if defined(MPI_OPT)
-      mpi_comm = MPI_COMM_WORLD
-      IF (PRESENT(comm)) mpi_comm = comm
+      mgrid_comm = MPI_COMM_WORLD
+      IF (PRESENT(comm)) mgrid_comm = comm
 #endif
 
       mgrid_path = TRIM(mgrid_file)
