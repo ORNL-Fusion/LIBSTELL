@@ -11,7 +11,7 @@ find_library (SCALAPACK_LIBRARY
               NAMES scalapack scalapack-openmpi mkl_scalapack_ilp64
               DOC "scalapack library")
 
-if (${SCALAPACK_LIBRARY} STREQUAL mkl_scalapack_ilp64)
+if (${SCALAPACK_LIBRARY} MATCHES mkl_scalapack_ilp64)
     find_library (SCABLACS_LIBRARY mkl_blacs_intelmpi_lp64)
 endif ()
 
