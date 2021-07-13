@@ -26,10 +26,10 @@ target_compile_definitions (stell PUBLIC
                             $<$<PLATFORM_ID:Darwin>:DARWIN>
                             $<$<PLATFORM_ID:Linux>:LINUX>
                             $<$<PLATFORM_ID:Windows>:WIN32>
-                            $<$<BOOL:${NetCDF_FOUND}>:NETCDF>
-                            $<$<BOOL:${MPI_Fortran_FOUND}>:MPI_OPT>
                             $<$<BOOL:${USE_FAST_COPY}>:FAST_COPY>
-                            $<$<BOOL:${USE_PROFILER}>:PROFILE_ON)
+                            $<$<BOOL:${USE_PROFILER}>:PROFILE_ON>
+                            $<$<BOOL:${NetCDF_FOUND}>:NETCDF>
+                            $<$<BOOL:${MPI_Fortran_FOUND}>:MPI_OPT>)
 target_link_libraries (stell PUBLIC
                        $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>
                        $<$<BOOL:${NetCDF_FOUND}>:NetCDF::NetCDF>
