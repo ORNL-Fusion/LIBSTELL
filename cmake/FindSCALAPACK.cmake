@@ -43,6 +43,6 @@ if (SCALAPACK_FOUND)
         add_library (SCALAPACK::SCALAPACK INTERFACE IMPORTED)
         target_link_libraries (SCALAPACK::SCALAPACK INTERFACE
                                SCALAPACK::SCALAPACK
-                               $<$<BOOL:${BLACS_LIBRARY}>SCALAPACK::BLACS>)
+                               $<$<BOOL:${BLACS_LIBRARY}>:SCALAPACK::BLACS>)
     endif ()
 endif ()
