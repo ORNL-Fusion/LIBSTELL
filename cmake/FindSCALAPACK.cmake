@@ -11,11 +11,9 @@ find_library (SCALAPACK_LIBRARY
               NAMES scalapack scalapack-openmpi mkl_scalapack_ilp64
               DOC "scalapack library")
 
-#if (${SCALAPACK_LIBRARY} MATCHES mkl_scalapack_ilp64)
-    find_library (BLACS_LIBRARY
-                  NAMES mkl_blacs_intelmpi_lp64
-                  DOC "blacs library")
-#endif ()
+find_library (BLACS_LIBRARY
+              NAMES mkl_blacs_intelmpi_lp64
+              DOC "blacs library")
 
 mark_as_advanced (SCALAPACK_LIBRARY)
 
@@ -23,7 +21,7 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (SCALAPACK
                                    REQUIRED_VARS SCALAPACK_LIBRARY)
 
-if (SCALAPACK_FOUND)
+if (${SCALAPACK_FOUND})
     set (SCALAPACK_LIBRARIES "${SCALAPACK_LIBRARY} ${BLACS_LIBRARY}")
 
     if (NOT TARGET SCALAPACK::SCALAPACK_BASE)
@@ -32,7 +30,7 @@ if (SCALAPACK_FOUND)
                               IMPORTED_LOCATION ${SCALAPACK_LIBRARY})
     endif ()
 
-    if (SCABLACS_LIBRARY)
+    if (${SCABLACS_LIBRARY})
         if (NOT TARGET SCALAPACK::BLACS)
             add_library (SCALAPACK::BLACS UNKNOWN IMPORTED)
             set_target_properties (SCALAPACK::BLACS PROPERTIES
