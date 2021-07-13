@@ -11,10 +11,11 @@ find_library (SCALAPACK_LIBRARY
               NAMES scalapack scalapack-openmpi mkl_scalapack_ilp64
               DOC "scalapack library")
 
-if (${SCALAPACK_LIBRARY} MATCHES mkl_scalapack_ilp64)
-    find_library (BLACS_LIBRARY mkl_blacs_intelmpi_lp64)
-
-endif ()
+#if (${SCALAPACK_LIBRARY} MATCHES mkl_scalapack_ilp64)
+    find_library (BLACS_LIBRARY
+                  NAMES mkl_blacs_intelmpi_lp64
+                  DOC "blacs library")
+#endif ()
 
 mark_as_advanced (SCALAPACK_LIBRARY)
 
