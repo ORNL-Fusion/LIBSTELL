@@ -42,7 +42,7 @@ if (SCALAPACK_FOUND)
     if (NOT TARGET  SCALAPACK::SCALAPACK)
         add_library (SCALAPACK::SCALAPACK INTERFACE IMPORTED)
         target_link_libraries (SCALAPACK::SCALAPACK INTERFACE
-                               SCALAPACK::SCALAPACK
+                               SCALAPACK::SCALAPACK_BASE
                                $<$<BOOL:${BLACS_LIBRARY}>:SCALAPACK::BLACS>)
     endif ()
 endif ()
