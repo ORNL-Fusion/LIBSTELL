@@ -36,9 +36,9 @@ target_link_libraries (stell PUBLIC
                        $<$<BOOL:${SCALAPACK_FOUND}>:SCALAPACK::SCALAPACK>
                        $<$<BOOL:${BLAS_FOUND}>:${BLAS_LIBRARIES}>
                        $<$<BOOL:${LAPACK_FOUND}>:${LAPACK_LIBRARIES}>)
-#target_include_directories (stell PRIVATE
-#                            ${MPI_C_INCLUDE_DIRS}
-#                            ${MPI_Fortran_INCLUDE_DIRS})
+target_include_directories (stell PRIVATE
+                            ${MPI_C_INCLUDE_DIRS}
+                            ${MPI_Fortran_INCLUDE_DIRS})
 if (MPI_Fortran_FOUND)
     set_target_properties (stell PROPERTIES
                            MPIEXEC_EXECUTABLE "${MPIEXEC_EXECUTABLE}"
