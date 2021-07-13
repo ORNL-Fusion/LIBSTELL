@@ -13,58 +13,37 @@ add_library (stell STATIC)
 
 add_subdirectory (Sources)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_compile_definitions (stell PUBLIC DARWIN)
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR 
-        ${CMAKE_SYSTEM_NAME} MATCHES "CrayLinuxEnvironment")
-    target_compile_definitions (stell PUBLIC LINUX)
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows" OR 
-        ${CMAKE_SYSTEM_NAME} MATCHES "MSYS")
-    target_compile_definitions (stell PUBLIC WIN32)
-endif ()
-
 OPTION (USE_PROFILER "Activate code profiling." OFF)
-if (USE_PROFILER)
-    target_compile_definitions (stell PUBLIC PROFILE_ON)
-endif ()
 
 # Activate or Deactivate fast copies. The fast copies maybe activated by setting
 # -DUSE_FAST_COPY=ON on the cmake command line.
 OPTION (USE_FAST_COPY "Activate code fast copies." OFF)
-if (USE_FAST_COPY)
-    target_compile_definitions (stell PUBLIC FAST_COPY)
-endif ()
 
 #  Fortran specific settings. The first setting tells the compiler to use the C
 #  preprocessor.
 target_compile_options (stell PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-cpp>)
-
+target_compile_definitions (stell PUBLIC
+                            $<$<PLATFORM_ID:Darwin>:DARWIN>
+                            $<$<PLATFORM_ID:Linux>:LINUX>
+                            $<$<PLATFORM_ID:Windows>:WIN32>
+                            $<$<BOOL:${USE_FAST_COPY}>:FAST_COPY>
+                            $<$<BOOL:${USE_PROFILER}>:PROFILE_ON>
+                            $<$<BOOL:${NetCDF_FOUND}>:NETCDF>
+                            $<$<BOOL:${MPI_Fortran_FOUND}>:MPI_OPT>)
+target_link_libraries (stell PUBLIC
+                       $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>
+                       $<$<BOOL:${NetCDF_FOUND}>:NetCDF::NetCDF>
+                       $<$<BOOL:${SCALAPACK_FOUND}>:SCALAPACK::SCALAPACK>
+                       $<$<BOOL:${BLAS_FOUND}>:${BLAS_LIBRARIES}>
+                       $<$<BOOL:${LAPACK_FOUND}>:${LAPACK_LIBRARIES}>)
+target_include_directories (stell PRIVATE
+                            ${MPI_C_INCLUDE_DIRS}
+                            ${MPI_Fortran_INCLUDE_DIRS})
 if (MPI_Fortran_FOUND)
-    target_compile_options (stell PUBLIC -DMPI_OPT)
-    target_include_directories (stell PRIVATE ${MPI_C_INCLUDE_DIRS}
-                                              ${MPI_Fortran_INCLUDE_DIRS})
-    target_link_libraries (stell INTERFACE MPI::MPI_Fortran)
     set_target_properties (stell PROPERTIES
                            MPIEXEC_EXECUTABLE "${MPIEXEC_EXECUTABLE}"
                            MPIEXEC_NUMPROC_FLAG "${MPIEXEC_NUMPROC_FLAG}"
                            MPIEXEC_MAX_NUMPROCS "${MPIEXEC_MAX_NUMPROCS}")
-endif ()
-
-if (NetCDF_FOUND)
-    target_compile_definitions (stell PUBLIC NETCDF)
-    target_link_libraries (stell PUBLIC NetCDF::NetCDF)
-endif ()
-
-if (SCALAPACK_FOUND)
-    target_link_libraries (stell PUBLIC SCALAPACK::SCALAPACK)
-endif ()
-
-if (BLAS_FOUND)
-    target_link_libraries (stell PUBLIC ${BLAS_LIBRARIES})
-endif ()
-
-if (LAPACK_FOUND)
-    target_link_libraries (stell PUBLIC ${LAPACK_LIBRARIES})
 endif ()
 
 ################################################################################
