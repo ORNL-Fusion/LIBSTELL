@@ -30,7 +30,7 @@ if (${SCALAPACK_FOUND})
                               IMPORTED_LOCATION ${SCALAPACK_LIBRARY})
     endif ()
 
-    if (${SCABLACS_LIBRARY})
+    if (EXISTS ${BLACS_LIBRARY})
         if (NOT TARGET SCALAPACK::BLACS)
             add_library (SCALAPACK::BLACS UNKNOWN IMPORTED)
             set_target_properties (SCALAPACK::BLACS PROPERTIES
