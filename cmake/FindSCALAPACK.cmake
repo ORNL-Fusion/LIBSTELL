@@ -12,8 +12,12 @@ find_library (SCALAPACK_LIBRARY
               DOC "scalapack library")
 
 find_library (BLACS_LIBRARY
-              NAMES mkl_blacs_intelmpi_lp64
+              NAMES blacs-openmpi mkl_blacs_intelmpi_lp64
               DOC "blacs library")
+
+find_library (BLACS_INIT_LIBRARY
+              NAMES blacsF77init-openmpi
+              DOC "blacs init library")
 
 mark_as_advanced (SCALAPACK_LIBRARY)
 
@@ -22,7 +26,7 @@ find_package_handle_standard_args (SCALAPACK
                                    REQUIRED_VARS SCALAPACK_LIBRARY)
 
 if (${SCALAPACK_FOUND})
-    set (SCALAPACK_LIBRARIES "${SCALAPACK_LIBRARY} ${BLACS_LIBRARY}")
+    set (SCALAPACK_LIBRARIES "${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} ${BLACS_INIT_LIBRARY}")
 
     if (NOT TARGET SCALAPACK::SCALAPACK_BASE)
        add_library (SCALAPACK::SCALAPACK_BASE UNKNOWN IMPORTED)
@@ -38,10 +42,20 @@ if (${SCALAPACK_FOUND})
         endif ()
     endif ()
 
+    if (EXISTS ${BLACS_INIT_LIBRARY})
+        if (NOT TARGET SCALAPACK::BLACS_INIT)
+            add_library (SCALAPACK::BLACS_INIT UNKNOWN IMPORTED)
+            set_target_properties (SCALAPACK::BLACS_INIT PROPERTIES
+                                   IMPORTED_LOCATION ${BLACS_INIT_LIBRARY})
+        endif ()
+    endif ()
+
     if (NOT TARGET  SCALAPACK::SCALAPACK)
         add_library (SCALAPACK::SCALAPACK INTERFACE IMPORTED)
         target_link_libraries (SCALAPACK::SCALAPACK INTERFACE
                                SCALAPACK::SCALAPACK_BASE
-                               $<$<BOOL:${BLACS_LIBRARY}>:SCALAPACK::BLACS>)
+                               $<$<BOOL:${BLACS_LIBRARY}>:SCALAPACK::BLACS>
+                               $<$<BOOL:${BLACS_INIT_LIBRARY}>:SCALAPACK::BLACS_INIT>)
     endif ()
 endif ()
+
