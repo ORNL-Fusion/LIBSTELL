@@ -66,10 +66,10 @@ endif ()
 
 #  Build test utilities.
 add_executable (xstell_unit_test_runner)
-target_link_libraries (xstell_unit_test_runner stell)
+target_link_libraries (xstell_unit_test_runner PUBLIC stell)
 
 #  Build file_opts testers
 add_executable (xstell_file_opts_runner)
-target_link_libraries (xstell_file_opts_runner stell)
+target_link_libraries (xstell_file_opts_runner PUBLIC stell)
 
 add_subdirectory (Testing)
