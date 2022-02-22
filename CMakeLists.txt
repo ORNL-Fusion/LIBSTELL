@@ -36,6 +36,9 @@ target_compile_definitions (stell
                             $<$<BOOL:${NetCDF_FOUND}>:NETCDF>
                             $<$<BOOL:${MPI_Fortran_FOUND}>:MPI_OPT>
 )
+#  FIXME: Remove Conditional on 3.18 check once minimum cmake version is above
+#  3.18. The findBLAS and findLAPACK libraries changed the target name after
+#  this version to include the :: variants.
 target_link_libraries (stell
 
                        PUBLIC
@@ -43,8 +46,14 @@ target_link_libraries (stell
                        $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>
                        $<$<BOOL:${NetCDF_FOUND}>:NetCDF::NetCDF>
                        $<$<BOOL:${SCALAPACK_FOUND}>:SCALAPACK::SCALAPACK>
-                       $<$<BOOL:${BLAS_FOUND}>:BLAS::BLAS>
-                       $<$<BOOL:${LAPACK_FOUND}>:LAPACK::LAPACK>
+                       $<$<BOOL:${BLAS_FOUND}>:
+                           $<$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.18>:BLAS::BLAS>
+                           $<$<VERSION_LESS:${CMAKE_VERSION},3.18>:${BLAS_LIBRARIES}>
+                       >
+                       $<$<BOOL:${LAPACK_FOUND}>:
+                           $<$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.18>:LAPACK::LAPACK>
+                           $<$<VERSION_LESS:${CMAKE_VERSION},3.18>:${LAPACK_LIBRARIES}>
+                       >
 )
 target_include_directories (stell
 
