@@ -46,8 +46,8 @@ target_link_libraries (stell
                        $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>
                        $<$<BOOL:${NetCDF_FOUND}>:NetCDF::NetCDF>
                        $<$<BOOL:${SCALAPACK_FOUND}>:SCALAPACK::SCALAPACK>
-                       $<$<BOOL:${BLAS_FOUND}>:$<IF:$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.18>,BLAS::BLAS,${BLAS_LIBRARIES}>>
-                       $<$<BOOL:${LAPACK_FOUND}>:$<IF:$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.18>,LAPACK::LAPACK,${LAPACK_LIBRARIES}>>
+                       $<$<BOOL:${BLAS_FOUND}>:$<IF:$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.18>,BLAS::BLAS,"${BLAS_LIBRARIES}">>
+                       $<$<BOOL:${LAPACK_FOUND}>:$<IF:$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.18>,LAPACK::LAPACK,"${LAPACK_LIBRARIES}">>
 )
 target_include_directories (stell
 
