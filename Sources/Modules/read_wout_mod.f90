@@ -2013,7 +2013,17 @@
 
 !     really only need to ALLOCATE 2*ntmax (don't need lambdas)
 !     for consistency, we'll allocate 3*ntmax and set lambdas = 0
-      zsc = 1+ntmax; zcs = zcs+ntmax; zcc = zcc+ntmax; zss = zss+ntmax
+      zsc = 1 + ntmax
+      IF (lthreed) THEN
+         zcs = zcs + ntmax
+      END IF
+      IF (lasym) THEN
+         zcc = zcc + ntmax
+         IF (lthreed) THEN
+            zss = zss + ntmax
+         END IF
+      END IF
+
       ALLOCATE(rzl_local(ns,0:ntor,0:mpol1,3*ntmax), stat=n)
       IF (n .ne. 0) STOP 'Allocation error in LoadRZL'
       rzl_local = 0
