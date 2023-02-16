@@ -13,6 +13,8 @@
       USE stel_kinds
       USE stel_constants, ONLY : pi
       USE mpi_inc
+      USE profiler
+      USE integration_path_context
 
       IMPLICIT NONE
 
@@ -55,6 +57,49 @@
       END TYPE
 
 !-------------------------------------------------------------------------------
+!>  Base class containing the parameters of the integration method to use.
+!-------------------------------------------------------------------------------
+      TYPE :: integration_path_class
+!>  Step size to use.
+         REAL (rprec) :: dx
+      CONTAINS
+         PROCEDURE    ::                                                       &
+     &      integrate_paths => integration_path_integrate_paths
+         PROCEDURE    ::                                                       &
+     &      integrate_path => integration_path_integrate_path
+         GENERIC      :: integrate => integrate_paths,                         &
+     &                                integrate_path
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Subclass to use Gauss Legendre Quadrature.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_class) ::                                 &
+     &   integration_path_gleg_class
+!>  Quadrature weights.
+         REAL (rprec), DIMENSION(:), POINTER :: weights
+!>  Quadrature abscissas.
+         REAL (rprec), DIMENSION(:), POINTER :: absc
+      CONTAINS
+         PROCEDURE                           ::                                &
+     &      integrate_path => integration_path_gleg_integrate_path
+         FINAL                               ::                                &
+     &      integration_path_gleg_destruct
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Subclass to use hp approch.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_gleg_class) ::                            &
+     &   integration_path_hp_glep_class
+!>  Quadrature interval length.
+         REAL (rprec) :: length
+      CONTAINS
+         PROCEDURE                           ::                                &
+     &      integrate_path => integration_path_hp_gleg_integrate_path
+      END TYPE
+
+!-------------------------------------------------------------------------------
 !>  A single point in space defined by an z, y, z coordinate. A vertex is
 !>  structured as a singly linked list.
 !-------------------------------------------------------------------------------
@@ -68,6 +113,27 @@
 !*******************************************************************************
 !  INTERFACE BLOCKS
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  Construction interface for integration_path_class constructor
+!-------------------------------------------------------------------------------
+      INTERFACE integration_path_class
+         MODULE PROCEDURE integration_path_construct
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Construction interface for integration_path_gleg_class construct0r
+!-------------------------------------------------------------------------------
+      INTERFACE integration_path_gleg_class
+         MODULE PROCEDURE integration_path_gleg_construct
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Construction interface for integration_path_gleg_class construct0r
+!-------------------------------------------------------------------------------
+      INTERFACE integration_path_hp_glep_class
+         MODULE PROCEDURE integration_path_hp_glep_construct
+      END INTERFACE
+
 !-------------------------------------------------------------------------------
 !>  Construction interface using either @ref path_construct_int or
 !>  @ref path_construct_vertex
@@ -102,6 +168,150 @@
 !*******************************************************************************
 !  CONSTRUCTION SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Factory method to construct a path integrator using a method.
+!>
+!>  @param[in] method  Integartion method to use.
+!>  @param[in] npoints Number of quadrature points to use.
+!>  @param[in] length  Length of the interval.
+!>  @returns A pointer to a constructed @ref integration_path_class object.
+!-------------------------------------------------------------------------------
+      FUNCTION make_integrator(method, npoints, length)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (integration_path_class), POINTER :: make_integrator
+      CHARACTER (len=*), INTENT(in)           :: method
+      INTEGER, INTENT(in)                     :: npoints
+      REAL (rprec), INTENT(in)                :: length
+
+!  local variables
+      REAL (rprec)                            :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      SELECT CASE (method)
+
+         CASE ('add')
+            make_integrator => integration_path_class()
+
+         CASE ('gleg')
+            make_integrator => integration_path_gleg_class(npoints)
+
+         CASE ('hp_gleg')
+            make_integrator => integration_path_hp_glep_class(npoints,         &
+     &                                                        length)
+
+      END SELECT
+
+      CALL profiler_set_stop_time('make_integrator', start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Construct an @ref integration_path_class object.
+!>
+!>  @returns A pointer to a constructed @ref integration_path_class object.
+!-------------------------------------------------------------------------------
+      FUNCTION integration_path_construct()
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (integration_path_class), POINTER ::                               &
+     &   integration_path_construct
+
+!  local variables
+      REAL (rprec)                            :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      ALLOCATE(integration_path_construct)
+      integration_path_construct%dx = path_default_dx
+
+      CALL profiler_set_stop_time('integration_path_construct',                &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Construct an @ref integration_path_class object.
+!>
+!>  @param[in] npoints Number of quadrature points to use.
+!>  @returns A pointer to a constructed @ref integration_path_class object.
+!-------------------------------------------------------------------------------
+      FUNCTION integration_path_gleg_construct(npoints)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (integration_path_gleg_class), POINTER ::                          &
+     &   integration_path_gleg_construct
+      INTEGER, INTENT(in)                          :: npoints
+
+!  local variables
+      REAL (rprec)                                 :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      ALLOCATE(integration_path_gleg_construct)
+      integration_path_gleg_construct%dx = path_default_dx
+
+      ALLOCATE(integration_path_gleg_construct%weights(npoints))
+      ALLOCATE(integration_path_gleg_construct%absc(npoints))
+      CALL path_get_gaussqad_weights(                                          &
+     &        0.0_rprec, 1.0_rprec,                                            &
+     &        integration_path_gleg_construct%absc,                            &
+     &        integration_path_gleg_construct%weights)
+
+      CALL profiler_set_stop_time('integration_path_gleg_construct',           &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Construct an @ref integration_path_class object.
+!>
+!>  @param[in] npoints Number of quadrature points to use.
+!>  @param[in] length  Length of the interval.
+!>  @returns A pointer to a constructed @ref integration_path_class object.
+!-------------------------------------------------------------------------------
+      FUNCTION integration_path_hp_glep_construct(npoints, length)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (integration_path_hp_glep_class), POINTER ::                       &
+     &   integration_path_hp_glep_construct
+      INTEGER, INTENT(in)                             :: npoints
+      REAL (rprec), INTENT(in)                        :: length
+
+!  local variables
+      REAL (rprec)                                    :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      ALLOCATE(integration_path_hp_glep_construct)
+      integration_path_hp_glep_construct%dx = path_default_dx
+      integration_path_hp_glep_construct%length = length
+
+      ALLOCATE(integration_path_hp_glep_construct%weights(npoints))
+      ALLOCATE(integration_path_hp_glep_construct%absc(npoints))
+      CALL path_get_gaussqad_weights(                                          &
+     &        0.0_rprec, 1.0_rprec,                                            &
+     &        integration_path_hp_glep_construct%absc,                         &
+     &        integration_path_hp_glep_construct%weights)
+
+      CALL profiler_set_stop_time('integration_path_hp_glep_construct',        &
+     &                            start_time)
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Construct a single @ref path_int_class.
 !>
@@ -181,6 +391,34 @@
 !*******************************************************************************
 !  DESTRUCTION SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Deconstruct a @ref integration_path_gleg_class object.
+!>
+!>  Deallocates memory and uninitializes a @ref integration_path_gleg_class
+!>  object.
+!>
+!>  @param[inout] this A @ref integration_path_gleg_class instance.
+!-------------------------------------------------------------------------------
+      SUBROUTINE integration_path_gleg_destruct(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (integration_path_gleg_class), INTENT(inout) :: this
+
+!  Start of executable code
+      IF (ASSOCIATED(this%weights)) THEN
+         DEALLOCATE(this%weights)
+         this%weights => null()
+      END IF
+
+      IF (ASSOCIATED(this%absc)) THEN
+         DEALLOCATE(this%absc)
+         this%absc => null()
+      END IF
+
+      END SUBROUTINE
+
 !-------------------------------------------------------------------------------
 !>  @brief Deconstruct a @ref path_int_class object.
 !>
@@ -269,6 +507,69 @@
       END IF
 
       END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Integrate along the paths.
+!>
+!>  Recursively runs through the next vertex to find the last vertex. Once the
+!>  last vertex is found, integrate alone that path. The integrand is proveded
+!>  by means of call back function.
+!>
+!>  @param[in] this                 In instance of a @ref integration_path_class
+!>                                  instance.
+!>  @param[in] path                 Starting @ref vertex to of the path to
+!>                                  integrate.
+!>  @param     integration_function Function pointer that defines the
+!>                                  integrand.
+!>  @param[in] context              Generic object that contains data for the
+!>                                  integration function.
+!>  @returns The total integrated path to the end.
+!-------------------------------------------------------------------------------
+      RECURSIVE FUNCTION integration_path_integrate_paths(this, path,          &
+     &                      integration_function, context)                     &
+     &  RESULT(total)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec)                                       :: total
+      CLASS (integration_path_class), INTENT(in)         :: this
+      TYPE (vertex), INTENT(in)                          :: path
+      CLASS (integration_path_context_class), INTENT(in) :: context
+      INTERFACE
+         FUNCTION integration_function(context, xcart, dxcart,                 &
+     &                                 length, dx)
+         USE stel_kinds
+         USE integration_path_context
+         REAL (rprec)                                       ::                 &
+     &      integration_function
+         CLASS (integration_path_context_class), INTENT(in) :: context
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
+         REAL (rprec), INTENT(in)                           :: length
+         REAL (rprec), INTENT(in)                           :: dx
+         END FUNCTION
+      END INTERFACE
+
+!  local variables
+      REAL (rprec)                                       :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      IF (ASSOCIATED(path%next)) THEN
+          total = this%integrate(path%next, integration_function,              &
+     &                           context)
+          total = this%integrate(context, path, path%next,                     &
+     &                           integration_function)
+      ELSE
+         total = 0.0
+      END IF
+
+      CALL profiler_set_stop_time('integration_path_integrate_paths',          &
+     &                            start_time)
+
+      END FUNCTION
 
 !-------------------------------------------------------------------------------
 !>  @brief Integrate along the path.
@@ -375,6 +676,263 @@
 !*******************************************************************************
 !  PRIVATE
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Line integrate between to points.
+!>
+!>  This chooses the specific integration method.
+!>
+!>  @param[in] this                 In instance of a @ref integration_path_class
+!>                                  instance.
+!>  @param[in] context              Generic object that contains data for the
+!>                                  integration function.
+!>  @param[in] vertex1              Starting point.
+!>  @param[in] vertex2              Ending point.
+!>  @param[in] dxinput              optional input allowing user to define dx
+!>  @param     integration_function Function pointer that defines the
+!>                                  integrand.
+!>  @returns The path integrated value between the vertex1 and vertex2.
+!-------------------------------------------------------------------------------
+      FUNCTION integration_path_integrate_path(this, context, vertex1,         &
+     &                                         vertex2,                        &
+     &                                         integration_function)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec)                                       ::                    &
+     &   integration_path_integrate_path
+      CLASS (integration_path_class), INTENT(in)         :: this
+      CLASS (integration_path_context_class), INTENT(in) :: context
+      TYPE (vertex), INTENT(in)                          :: vertex1
+      TYPE (vertex), INTENT(in)                          :: vertex2
+      INTERFACE
+         FUNCTION integration_function(context, xcart, dxcart,                 &
+     &                                 length, dx)
+         USE stel_kinds
+         USE integration_path_context
+         REAL (rprec) :: integration_function
+         CLASS (integration_path_context_class), INTENT(in) :: context
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
+         REAL (rprec), INTENT(in)                           :: length
+         REAL (rprec), INTENT(in)                           :: dx
+         END FUNCTION
+      END INTERFACE
+
+!  local variables
+      REAL (rprec), DIMENSION(3)                         :: xcart
+      REAL (rprec), DIMENSION(3)                         :: dxcart
+      REAL (rprec)                                       :: length
+      REAL (rprec)                                       :: dx
+      INTEGER                                            :: i
+      INTEGER                                            :: nsteps
+      REAL (rprec)                                       :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+!  Determine the number of integration steps to take by dividing the path length
+!  by the step length and rounding to the nearest integer.
+      dxcart = vertex2%position - vertex1%position
+      length = SQRT(DOT_PRODUCT(dxcart, dxcart))
+      nsteps = INT(length/this%dx)
+!  Choose the actual step size.
+      dxcart = dxcart/nsteps
+      dx = SQRT(DOT_PRODUCT(dxcart, dxcart))
+      
+!  Integrate the length in addition.
+      integration_path_integrate_path = 0.0
+      length = 0.0
+      xcart = vertex1%position
+      DO i = 1, nsteps
+         xcart = xcart + dxcart
+         length = length + dx
+         integration_path_integrate_path =                                     &
+     &      integration_path_integrate_path +                                  &
+     &      integration_function(context, xcart, dxcart, length, dx)
+      END DO
+
+      CALL profiler_set_stop_time('integration_path_integrate_path',           &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Line integrate between to points.
+!>
+!>  This chooses the specific integration method.
+!>
+!>  @param[in] this                 In instance of a @ref integration_path_class
+!>                                  instance.
+!>  @param[in] context              Generic object that contains data for the
+!>                                  integration function.
+!>  @param[in] vertex1              Starting point.
+!>  @param[in] vertex2              Ending point.
+!>  @param[in] dxinput              optional input allowing user to define dx
+!>  @param     integration_function Function pointer that defines the
+!>                                  integrand.
+!>  @returns The path integrated value between the vertex1 and vertex2.
+!-------------------------------------------------------------------------------
+      FUNCTION integration_path_gleg_integrate_path(this, context,             &
+     &            vertex1, vertex2, integration_function)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec)                                       ::                    &
+     &   integration_path_gleg_integrate_path
+      CLASS (integration_path_gleg_class), INTENT(in)    :: this
+      CLASS (integration_path_context_class), INTENT(in) :: context
+      TYPE (vertex), INTENT(in)                          :: vertex1
+      TYPE (vertex), INTENT(in)                          :: vertex2
+      INTERFACE
+         FUNCTION integration_function(context, xcart, dxcart,                 &
+     &                                 length, dx)
+         USE stel_kinds
+         USE integration_path_context
+         REAL (rprec) :: integration_function
+         CLASS (integration_path_context_class), INTENT(in) :: context
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
+         REAL (rprec), INTENT(in)                           :: length
+         REAL (rprec), INTENT(in)                           :: dx
+         END FUNCTION
+      END INTERFACE
+
+!  local variables
+      REAL (rprec), DIMENSION(3)                         :: xcart
+      REAL (rprec), DIMENSION(3)                         :: dxcart
+      REAL (rprec)                                       :: length
+      REAL (rprec)                                       :: temp_length
+      REAL (rprec)                                       :: dx
+      INTEGER                                            :: i
+      REAL (rprec)                                       :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+!  Determine the number of integration steps to take by dividing the path length
+!  by the step length and rounding to the nearest integer.
+      dxcart = vertex2%position - vertex1%position
+      length = SQRT(DOT_PRODUCT(dxcart, dxcart))
+      dxcart(:) = dxcart(:)/length
+      
+!  Integrate the length using Gauss-Legendre quadrature
+      integration_path_gleg_integrate_path = 0.0
+      xcart = vertex1%position
+      DO i = 1, SIZE(this%weights)
+         xcart = vertex1%position + this%absc(i)*dxcart*length
+         temp_length = this%absc(i)*length
+
+         integration_path_gleg_integrate_path =                                &
+     &      integration_path_gleg_integrate_path +                             &
+     &      this%weights(i)*integration_function(context, xcart,               &
+     &                                           dxcart, temp_length,          &
+     &                                           1.0_rprec)
+      END DO
+      integration_path_gleg_integrate_path =                                   &
+     &   integration_path_gleg_integrate_path*length
+
+      CALL profiler_set_stop_time(                                             &
+     &        'integration_path_gleg_integrate_path', start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Line integrate between to points.
+!>
+!>  This chooses the specific integration method.
+!>
+!>  @param[in] this                 In instance of a @ref integration_path_class
+!>                                  instance.
+!>  @param[in] context              Generic object that contains data for the
+!>                                  integration function.
+!>  @param[in] vertex1              Starting point.
+!>  @param[in] vertex2              Ending point.
+!>  @param[in] dxinput              optional input allowing user to define dx
+!>  @param     integration_function Function pointer that defines the
+!>                                  integrand.
+!>  @returns The path integrated value between the vertex1 and vertex2.
+!-------------------------------------------------------------------------------
+      FUNCTION integration_path_hp_gleg_integrate_path(this, context,          &
+     &            vertex1, vertex2, integration_function)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec)                                       ::                    &
+     &   integration_path_hp_gleg_integrate_path
+      CLASS (integration_path_hp_glep_class), INTENT(in) :: this
+      CLASS (integration_path_context_class), INTENT(in) :: context
+      TYPE (vertex), INTENT(in)                          :: vertex1
+      TYPE (vertex), INTENT(in)                          :: vertex2
+      INTERFACE
+         FUNCTION integration_function(context, xcart, dxcart,                 &
+     &                                 length, dx)
+         USE stel_kinds
+         USE integration_path_context
+         REAL (rprec) :: integration_function
+         CLASS (integration_path_context_class), INTENT(in) :: context
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
+         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
+         REAL (rprec), INTENT(in)                           :: length
+         REAL (rprec), INTENT(in)                           :: dx
+         END FUNCTION
+      END INTERFACE
+
+!  local variables
+      REAL (rprec), DIMENSION(3)                         :: xcart
+      REAL (rprec), DIMENSION(3)                         :: xcart1
+      REAL (rprec), DIMENSION(3)                         :: dxcart
+      REAL (rprec)                                       :: length
+      REAL (rprec)                                       :: lengthp
+      REAL (rprec)                                       :: temp_length
+      INTEGER                                            :: i
+      INTEGER                                            :: j
+      INTEGER                                            :: nsteps
+      REAL (rprec)                                       :: int_length
+      REAL (rprec)                                       :: integratej
+      REAL (rprec)                                       :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+!  Determine the number of integration steps to take by dividing the path length
+!  by the step length and rounding to the nearest integer.
+      dxcart = vertex2%position - vertex1%position
+      length = SQRT(DOT_PRODUCT(dxcart, dxcart))
+      dxcart(:) = dxcart(:)/length
+
+      nsteps =  INT(length/this%length)
+      int_length = length/REAL(nsteps, rprec)
+
+!  Integrate the length using Gauss-Legendre quadrature
+      integration_path_hp_gleg_integrate_path = 0.0
+      xcart = vertex1%position
+      lengthp = 0.0
+      DO j = 1, nsteps
+         integratej = 0.0
+         DO i = 1, SIZE(this%weights)
+            xcart1 = xcart + this%absc(i)*dxcart*int_length
+            temp_length = lengthp + this%absc(i)*int_length
+            integratej = integratej +                                          &
+     &         this%weights(i)*integration_function(context, xcart1,           &
+     &                                              dxcart, temp_length,       &
+     &                                              1.0_rprec)
+         END DO
+
+         integration_path_hp_gleg_integrate_path =                             &
+     &      integration_path_hp_gleg_integrate_path +                          &
+     &      integratej*int_length
+         lengthp = lengthp + int_length
+         xcart = xcart + dxcart*int_length
+      END DO
+
+      CALL profiler_set_stop_time(                                             &
+     &        'integration_path_hp_gleg_integrate_path', start_time)
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Line integrate between to points.
 !>
@@ -852,16 +1410,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                        :: path_test
+      LOGICAL                                         :: path_test
 
 !  local variables
-      REAL (rprec)                   :: result
-      TYPE (vertex), POINTER         :: test_path => null()
-      TYPE (path_int_class), POINTER :: int_params
-      CHARACTER(len=1), ALLOCATABLE  :: context(:)
-      REAL(rprec), DIMENSION(3)      :: absc
-      REAL(rprec), DIMENSION(3)      :: wgts
-      REAL(rprec)                    :: work
+      REAL (rprec)                                    :: result
+      TYPE (vertex), POINTER                          ::                       &
+     &   test_path => null()
+      CLASS (integration_path_class), POINTER         :: int_params
+      CLASS (integration_path_context_class), POINTER :: context
+      REAL (rprec), DIMENSION(3)                      :: absc
+      REAL (rprec), DIMENSION(3)                      :: wgts
+      REAL (rprec)                                    :: work
 
 !  Start of executable code
 !  Test to make sure the vertices begin in an unallocated state.
@@ -932,7 +1491,7 @@
       IF (.not.path_test) RETURN
 
 !  Test to make sure a path_in_class object was allocated.
-      int_params => path_construct('add', 0, 0.0_rprec)
+      int_params => make_integrator('add', 0, 0.0_rprec)
       path_test = check(.true., ASSOCIATED(int_params), 1,                     &
      &                  'path_construct_int')
       IF (.not.path_test) RETURN
@@ -942,10 +1501,9 @@
      &                        (/ 2.0_rprec, 0.0_rprec, 0.0_rprec /))
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 0.0_rprec, 0.0_rprec, 0.0_rprec /))
-      result = path_integrate(int_params, test_path, test_function,            &
-     &                        context)
+      result = int_params%integrate(test_path, test_function, context)
       path_test = check(2.0_rprec, result, 1, 'path_integrate')
-      CALL path_destruct(int_params)
+      DEALLOCATE(int_params)
 
 !  Test gll integrator weights and abscissas
       CALL path_get_gaussqad_weights(-1.0_rprec, 1.0_rprec, absc, wgts)
@@ -959,22 +1517,20 @@
       IF (.not.path_test) RETURN
 
 !  Test gleg integrator.
-      int_params => path_construct('gleg', 100, 0.0_rprec)
-      result = path_integrate(int_params, test_path, test_function,            &
-     &                        context)
+      int_params => make_integrator('gleg', 100, 0.0_rprec)
+      result = int_params%integrate(test_path, test_function, context)
       path_test = check(2.0_rprec, result, 1, 'path_integrate_gleg')
       IF (.not.path_test) RETURN
-      CALL path_destruct(int_params)
+      DEALLOCATE(int_params)
 
 !  Test hp_gleg integrator.
-      int_params => path_construct('hp_gleg', 100, 0.01_rprec)
-      result = path_integrate(int_params, test_path, test_function,            &
-     &                        context)
+      int_params => make_integrator('hp_gleg', 100, 0.01_rprec)
+      result = int_params%integrate(test_path, test_function, context)
       path_test = check(2.0_rprec, result, 1,                                &
      &                  'path_integrate_hp_gleg')
       IF (.not.path_test) RETURN
       CALL path_destruct(test_path)
-      CALL path_destruct(int_params)
+      DEALLOCATE(int_params)
 
       END FUNCTION
 
@@ -1101,12 +1657,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: test_function
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                                       ::                    &
+     &   test_function
+      CLASS (integration_path_context_class), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
+      REAL (rprec), INTENT(in)                           :: length
+      REAL (rprec), INTENT(in)                           :: dx
 
 !  Start of executable code
       test_function = dx
