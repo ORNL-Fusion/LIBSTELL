@@ -499,13 +499,11 @@
 !>
 !>  This chooses the specific integration method.
 !>
-!>  @param[in] this                 In instance of a @ref integration_path_class
-!>                                  instance.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @param[in] vertex1              Starting point.
-!>  @param[in] vertex2              Ending point.
-!>  @param[in] dxinput              optional input allowing user to define dxertex1 and vertex2.
+!>  @param[in] this    In instance of a @ref integration_path_class instance.
+!>  @param[in] context Generic object that contains data for the integration
+!>                     function.
+!>  @param[in] vertex1 Starting point.
+!>  @param[in] vertex2 Ending point.
 !-------------------------------------------------------------------------------
       FUNCTION integration_path_integrate_path(this, context, vertex1,         &
      &                                         vertex2)
@@ -563,13 +561,11 @@
 !>
 !>  This chooses the specific integration method.
 !>
-!>  @param[in] this                 In instance of a @ref integration_path_class
-!>                                  instance.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @param[in] vertex1              Starting point.
-!>  @param[in] vertex2              Ending point.
-!>  @param[in] dxinput              optional input allowing user to define dx
+!>  @param[in] this    In instance of a @ref integration_path_class instance.
+!>  @param[in] context Generic object that contains data for the integration
+!>                     function.
+!>  @param[in] vertex1 Starting point.
+!>  @param[in] vertex2 Ending point.
 !>  @returns The path integrated value between the vertex1 and vertex2.
 !-------------------------------------------------------------------------------
       FUNCTION integration_path_gleg_integrate_path(this, context,             &
@@ -628,15 +624,11 @@
 !>
 !>  This chooses the specific integration method.
 !>
-!>  @param[in] this                 In instance of a @ref integration_path_class
-!>                                  instance.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @param[in] vertex1              Starting point.
-!>  @param[in] vertex2              Ending point.
-!>  @param[in] dxinput              optional input allowing user to define dx
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
+!>  @param[in] this    In instance of a @ref integration_path_class instance.
+!>  @param[in] context Generic object that contains data for the integration
+!>                     function.
+!>  @param[in] vertex1 Starting point.
+!>  @param[in] vertex2 Ending point.
 !>  @returns The path integrated value between the vertex1 and vertex2.
 !-------------------------------------------------------------------------------
       FUNCTION integration_path_hp_gleg_integrate_path(this, context,          &
@@ -711,11 +703,11 @@
 !>  This divides the straight line path defined by two vertices and searched for
 !>  a condition. The search criteria is proveded by means of call back function.
 !>
-!>  @param[in] context          Generic object that contains data for the search
-!>                              function.
-!>  @param[in]  vertex1         Starting point.
-!>  @param[in]  vertex2         Ending point.
-!>  @param[out] xcart           Point where the search criteria was found.
+!>  @param[in] context  Generic object that contains data for the search
+!>                      function.
+!>  @param[in]  vertex1 Starting point.
+!>  @param[in]  vertex2 Ending point.
+!>  @param[out] xcart   Point where the search criteria was found.
 !>  @returns True if the criteria was met between vertex1 and vertex2.
 !-------------------------------------------------------------------------------
       FUNCTION search_path(context, vertex1, vertex2, xcart)
