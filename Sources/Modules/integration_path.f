@@ -417,12 +417,10 @@
 !>  last vertex is found, integrate alone that path. The integrand is proveded
 !>  by means of call back function.
 !>
-!>  @param[in] this                 In instance of a @ref integration_path_class
-!>                                  instance.
-!>  @param[in] path                 Starting @ref vertex to of the path to
-!>                                  integrate.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
+!>  @param[in] this    In instance of a @ref integration_path_class instance.
+!>  @param[in] path    Starting @ref vertex to of the path to integrate.
+!>  @param[in] context Generic object that contains data for the integration
+!>                     function.
 !>  @returns The total integrated path to the end.
 !-------------------------------------------------------------------------------
       RECURSIVE FUNCTION integration_path_integrate_paths(this, path,          &
