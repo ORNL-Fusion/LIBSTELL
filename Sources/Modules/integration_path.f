@@ -110,6 +110,22 @@
          TYPE (vertex), POINTER     :: next => null()
       END TYPE
 
+!-------------------------------------------------------------------------------
+!>  A type for the test cases.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_context_class) :: test_context
+      CONTAINS
+         PROCEDURE :: run => test_function
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  A type for the test cases.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(search_path_context_class) :: test_search_context
+      CONTAINS
+         PROCEDURE :: run => test_search_function
+      END TYPE
+
 !*******************************************************************************
 !  INTERFACE BLOCKS
 !*******************************************************************************
@@ -161,7 +177,8 @@
 
       PRIVATE :: check, check_real, check_log, check_int,                      &
      &           integrate, integrate_add, integrate_gleg,                     &
-     &           integrate_hp_gleg, search, test_function
+     &           integrate_hp_gleg, search, test_function,                     &
+     &           search_path
 
       CONTAINS
 
@@ -519,14 +536,12 @@
 !>                                  instance.
 !>  @param[in] path                 Starting @ref vertex to of the path to
 !>                                  integrate.
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
 !>  @param[in] context              Generic object that contains data for the
 !>                                  integration function.
 !>  @returns The total integrated path to the end.
 !-------------------------------------------------------------------------------
       RECURSIVE FUNCTION integration_path_integrate_paths(this, path,          &
-     &                      integration_function, context)                     &
+     &                                                    context)             &
      &  RESULT(total)
 
       IMPLICIT NONE
@@ -536,20 +551,6 @@
       CLASS (integration_path_class), INTENT(in)         :: this
       TYPE (vertex), INTENT(in)                          :: path
       CLASS (integration_path_context_class), INTENT(in) :: context
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         USE integration_path_context
-         REAL (rprec)                                       ::                 &
-     &      integration_function
-         CLASS (integration_path_context_class), INTENT(in) :: context
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
-         REAL (rprec), INTENT(in)                           :: length
-         REAL (rprec), INTENT(in)                           :: dx
-         END FUNCTION
-      END INTERFACE
 
 !  local variables
       REAL (rprec)                                       :: start_time
@@ -558,10 +559,8 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(path%next)) THEN
-          total = this%integrate(path%next, integration_function,              &
-     &                           context)
-          total = this%integrate(context, path, path%next,                     &
-     &                           integration_function)
+          total = this%integrate(path%next, context)
+          total = this%integrate(context, path, path%next)
       ELSE
          total = 0.0
       END IF
@@ -631,6 +630,42 @@
 !>  last vertex is found, a new vertex is allocated and appended to the path.
 !>  The integrand is proveded by means of call back function.
 !>
+!>  @param[in]  path    Starting vertex to begin search.
+!>  @param[in]  context Generic object that contains data for the integration
+!>                      function.
+!>  @param[out] found   Signals if the condition was met.
+!>  @returns The vertex position along the path where the search condition was
+!>           found.
+!-------------------------------------------------------------------------------
+      RECURSIVE FUNCTION search_paths(path, context, found)                    &
+     &   RESULT(xcart)
+
+      IMPLICIT NONE
+
+      REAL (rprec), DIMENSION(3)                    :: xcart
+      TYPE (vertex), INTENT(in)                     :: path
+      CLASS (search_path_context_class), INTENT(in) :: context
+      LOGICAL, INTENT(out)                          :: found
+
+!  Start of executable code
+      found = .false.
+
+      IF (ASSOCIATED(path%next)) THEN
+         found = search_path(context, path, path%next, xcart)
+         IF (.not.found) THEN
+            xcart = search_paths(path%next, context, found)
+         END IF
+      END IF
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Search along the path.
+!>
+!>  Recursively runs through the next vertex to find the last vertex. Once the
+!>  last vertex is found, a new vertex is allocated and appended to the path.
+!>  The integrand is proveded by means of call back function.
+!>
 !>  @param[in]  path            Starting vertex to begin search.
 !>  @param      search_function Function pointer that defines the search
 !>                              criteria.
@@ -687,14 +722,10 @@
 !>                                  integration function.
 !>  @param[in] vertex1              Starting point.
 !>  @param[in] vertex2              Ending point.
-!>  @param[in] dxinput              optional input allowing user to define dx
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
-!>  @returns The path integrated value between the vertex1 and vertex2.
+!>  @param[in] dxinput              optional input allowing user to define dxertex1 and vertex2.
 !-------------------------------------------------------------------------------
       FUNCTION integration_path_integrate_path(this, context, vertex1,         &
-     &                                         vertex2,                        &
-     &                                         integration_function)
+     &                                         vertex2)
 
       IMPLICIT NONE
 
@@ -705,19 +736,6 @@
       CLASS (integration_path_context_class), INTENT(in) :: context
       TYPE (vertex), INTENT(in)                          :: vertex1
       TYPE (vertex), INTENT(in)                          :: vertex2
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         USE integration_path_context
-         REAL (rprec) :: integration_function
-         CLASS (integration_path_context_class), INTENT(in) :: context
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
-         REAL (rprec), INTENT(in)                           :: length
-         REAL (rprec), INTENT(in)                           :: dx
-         END FUNCTION
-      END INTERFACE
 
 !  local variables
       REAL (rprec), DIMENSION(3)                         :: xcart
@@ -749,7 +767,7 @@
          length = length + dx
          integration_path_integrate_path =                                     &
      &      integration_path_integrate_path +                                  &
-     &      integration_function(context, xcart, dxcart, length, dx)
+     &      context%run(xcart, dxcart, length, dx)
       END DO
 
       CALL profiler_set_stop_time('integration_path_integrate_path',           &
@@ -769,12 +787,10 @@
 !>  @param[in] vertex1              Starting point.
 !>  @param[in] vertex2              Ending point.
 !>  @param[in] dxinput              optional input allowing user to define dx
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
 !>  @returns The path integrated value between the vertex1 and vertex2.
 !-------------------------------------------------------------------------------
       FUNCTION integration_path_gleg_integrate_path(this, context,             &
-     &            vertex1, vertex2, integration_function)
+     &                                              vertex1, vertex2)
 
       IMPLICIT NONE
 
@@ -785,19 +801,6 @@
       CLASS (integration_path_context_class), INTENT(in) :: context
       TYPE (vertex), INTENT(in)                          :: vertex1
       TYPE (vertex), INTENT(in)                          :: vertex2
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         USE integration_path_context
-         REAL (rprec) :: integration_function
-         CLASS (integration_path_context_class), INTENT(in) :: context
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
-         REAL (rprec), INTENT(in)                           :: length
-         REAL (rprec), INTENT(in)                           :: dx
-         END FUNCTION
-      END INTERFACE
 
 !  local variables
       REAL (rprec), DIMENSION(3)                         :: xcart
@@ -826,9 +829,8 @@
 
          integration_path_gleg_integrate_path =                                &
      &      integration_path_gleg_integrate_path +                             &
-     &      this%weights(i)*integration_function(context, xcart,               &
-     &                                           dxcart, temp_length,          &
-     &                                           1.0_rprec)
+     &      this%weights(i)*context%run(xcart, dxcart, temp_length,            &
+     &                                  1.0_rprec)
       END DO
       integration_path_gleg_integrate_path =                                   &
      &   integration_path_gleg_integrate_path*length
@@ -855,7 +857,8 @@
 !>  @returns The path integrated value between the vertex1 and vertex2.
 !-------------------------------------------------------------------------------
       FUNCTION integration_path_hp_gleg_integrate_path(this, context,          &
-     &            vertex1, vertex2, integration_function)
+     &                                                 vertex1,                &
+     &                                                 vertex2)
 
       IMPLICIT NONE
 
@@ -866,19 +869,6 @@
       CLASS (integration_path_context_class), INTENT(in) :: context
       TYPE (vertex), INTENT(in)                          :: vertex1
       TYPE (vertex), INTENT(in)                          :: vertex2
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         USE integration_path_context
-         REAL (rprec) :: integration_function
-         CLASS (integration_path_context_class), INTENT(in) :: context
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
-         REAL (rprec), INTENT(in)                           :: length
-         REAL (rprec), INTENT(in)                           :: dx
-         END FUNCTION
-      END INTERFACE
 
 !  local variables
       REAL (rprec), DIMENSION(3)                         :: xcart
@@ -916,9 +906,8 @@
             xcart1 = xcart + this%absc(i)*dxcart*int_length
             temp_length = lengthp + this%absc(i)*int_length
             integratej = integratej +                                          &
-     &         this%weights(i)*integration_function(context, xcart1,           &
-     &                                              dxcart, temp_length,       &
-     &                                              1.0_rprec)
+     &         this%weights(i)*context%run(xcart1, dxcart, temp_length,        &
+     &                                     1.0_rprec)
          END DO
 
          integration_path_hp_gleg_integrate_path =                             &
@@ -1240,6 +1229,77 @@
 !>                              function.
 !>  @param[in]  vertex1         Starting point.
 !>  @param[in]  vertex2         Ending point.
+!>  @param[out] xcart           Point where the search criteria was found.
+!>  @returns True if the criteria was met between vertex1 and vertex2.
+!-------------------------------------------------------------------------------
+      FUNCTION search_path(context, vertex1, vertex2, xcart)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL                                       :: search_path
+      CLASS (search_path_context_class), INTENT(in) :: context
+      TYPE (vertex), INTENT(in)                     :: vertex1
+      TYPE (vertex), INTENT(in)                     :: vertex2
+      REAL (rprec), DIMENSION(3), INTENT(out)       :: xcart
+
+!  local variables
+      REAL (rprec), DIMENSION(3)                    :: dxcart
+      REAL (rprec)                                  :: dx
+      INTEGER                                       :: i
+      INTEGER                                       :: nsteps
+
+!  local parameters
+      REAL (rprec), PARAMETER                       ::                         &
+     &   dxCourse = 0.01
+      REAL (rprec), PARAMETER                       ::                         &
+     &   dxFine = 1.0E-20
+
+!  Start of executable code
+!  Determine the number of integration steps to take by dividing the path length
+!  by the step length and rounding to the nearest integer.
+      dxcart = vertex2%position - vertex1%position
+      nsteps = INT(SQRT(DOT_PRODUCT(dxcart, dxcart))/dxCourse)
+
+!  Choose the actual step size.
+      dxcart = dxcart/nsteps
+
+      search_path = .false.
+      xcart = vertex1%position
+
+!  Linearly search the line until an interval containing the point is detected.
+      DO i = 1, nsteps
+         search_path = context%run(xcart, xcart + dxcart)
+         IF (search_path) THEN
+
+!  Found an interval. Bisect the interval until the length is machine precision.
+            DO WHILE (SQRT(DOT_PRODUCT(dxcart, dxcart)) .gt. dxFine)
+               dxcart = dxcart/2.0
+               IF (.not.context%run(xcart, xcart + dxcart)) THEN
+                  xcart = xcart + dxcart
+               END IF
+            END DO
+
+            xcart = xcart + dxcart/2.0
+            RETURN
+
+         END IF
+
+         xcart = xcart + dxcart
+      END DO
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Search line between to points.
+!>
+!>  This divides the straight line path defined by two vertices and searched for
+!>  a condition. The search criteria is proveded by means of call back function.
+!>
+!>  @param[in] context          Generic object that contains data for the search
+!>                              function.
+!>  @param[in]  vertex1         Starting point.
+!>  @param[in]  vertex2         Ending point.
 !>  @param      search_function Function pointer that defines the search
 !>                              criteria.
 !>  @param[out] xcart           Point where the search criteria was found.
@@ -1382,7 +1442,9 @@
 !  Previous guess for i-th root
             last = current
             current = last - p1/pp
-            IF (ABS(current - last) .le. eps) EXIT
+            IF (ABS(current - last) .le. eps) THEN
+               EXIT
+            END IF
          END DO
 
          abscissas(i) = xm - xl*current
@@ -1410,127 +1472,217 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                                         :: path_test
+      LOGICAL                                 :: path_test
 
 !  local variables
-      REAL (rprec)                                    :: result
-      TYPE (vertex), POINTER                          ::                       &
-     &   test_path => null()
-      CLASS (integration_path_class), POINTER         :: int_params
-      CLASS (integration_path_context_class), POINTER :: context
-      REAL (rprec), DIMENSION(3)                      :: absc
-      REAL (rprec), DIMENSION(3)                      :: wgts
-      REAL (rprec)                                    :: work
+      REAL (rprec)                            :: result
+      TYPE (vertex), POINTER                  :: test_path => null()
+      CLASS (integration_path_class), POINTER :: int_params
+      CLASS (test_context), POINTER           :: context
+      CLASS (test_search_context), POINTER    :: search_context
+      REAL (rprec), DIMENSION(3)              :: absc
+      REAL (rprec), DIMENSION(3)              :: wgts
+      REAL (rprec)                            :: work
+      REAL (rprec), DIMENSION(3)              :: point
 
 !  Start of executable code
 !  Test to make sure the vertices begin in an unallocated state.
       path_test = check(.false., ASSOCIATED(test_path), 1, 'ASSOCIATED')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
 
 !  Test to make sure first vertex is created.
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 1.0_rprec, 2.0_rprec, 3.0_rprec /))
       path_test = check(.true., ASSOCIATED(test_path), 1,                      &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(1.0_rprec, test_path%position(1), 2,                   &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(2.0_rprec, test_path%position(2), 3,                   &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(3.0_rprec, test_path%position(3), 4,                   &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
 
 !  Test to make sure second vertex is appended.
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 4.0_rprec, 5.0_rprec, 6.0_rprec /))
       path_test = check(.true., ASSOCIATED(test_path%next), 5,                 &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(1.0_rprec, test_path%position(1), 6,                   &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(2.0_rprec, test_path%position(2), 7,                   &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(3.0_rprec, test_path%position(3), 8,                   &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(4.0_rprec, test_path%next%position(1), 9,              &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(5.0_rprec, test_path%next%position(2), 10,             &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(6.0_rprec, test_path%next%position(3), 11,             &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
 
 !  Test to make sure third vertex is appended.
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 7.0_rprec, 8.0_rprec, 9.0_rprec /))
       path_test = check(.true., ASSOCIATED(test_path%next%next),               &
      &                  12, 'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(7.0_rprec, test_path%next%next%position(1), 12,        &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(8.0_rprec, test_path%next%next%position(2), 13,        &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(9.0_rprec, test_path%next%next%position(3), 14,        &
      &                  'path_append_vertex')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
 
 !  Test to make sure path object is destroyed.
       CALL path_destruct(test_path)
       path_test = check(.false., ASSOCIATED(test_path), 1,                     &
      &                  'path_destruct')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
 
 !  Test to make sure a path_in_class object was allocated.
       int_params => make_integrator('add', 0, 0.0_rprec)
       path_test = check(.true., ASSOCIATED(int_params), 1,                     &
      &                  'path_construct_int')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
+
+      ALLOCATE(context)
 
 !  Test path integration.
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 2.0_rprec, 0.0_rprec, 0.0_rprec /))
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 0.0_rprec, 0.0_rprec, 0.0_rprec /))
-      result = int_params%integrate(test_path, test_function, context)
+      result = int_params%integrate(test_path, context)
       path_test = check(2.0_rprec, result, 1, 'path_integrate')
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       DEALLOCATE(int_params)
 
 !  Test gll integrator weights and abscissas
       CALL path_get_gaussqad_weights(-1.0_rprec, 1.0_rprec, absc, wgts)
       work = SQRT(0.6_rprec)
       path_test = check(-1.0_rprec*work, absc(1), 1, 'get_gaussqad_a')
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check( 0.0_rprec,      absc(2), 2, 'get_gaussqad_a')
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(           work, absc(3), 3, 'get_gaussqad_a')
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(5._rprec/9._rprec, wgts(1), 4, 'get_gaussqad_w')
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(8._rprec/9._rprec, wgts(2), 5, 'get_gaussqad_w')
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       path_test = check(5._rprec/9._rprec, wgts(3), 6, 'get_gaussqad_w')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
 
 !  Test gleg integrator.
       int_params => make_integrator('gleg', 100, 0.0_rprec)
-      result = int_params%integrate(test_path, test_function, context)
+      result = int_params%integrate(test_path, context)
       path_test = check(2.0_rprec, result, 1, 'path_integrate_gleg')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       DEALLOCATE(int_params)
 
 !  Test hp_gleg integrator.
       int_params => make_integrator('hp_gleg', 100, 0.01_rprec)
-      result = int_params%integrate(test_path, test_function, context)
+      result = int_params%integrate(test_path, context)
       path_test = check(2.0_rprec, result, 1,                                &
      &                  'path_integrate_hp_gleg')
-      IF (.not.path_test) RETURN
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
       CALL path_destruct(test_path)
       DEALLOCATE(int_params)
+
+      DEALLOCATE(context)
+
+!-------------------------------------------------------------------------------
+!  Test path searches.
+!-------------------------------------------------------------------------------
+      ALLOCATE(search_context)
+
+      CALL path_append_vertex(test_path,                                       &
+     &                        (/ 10.0_rprec, 5.0_rprec, 1.0_rprec /))
+      CALL path_append_vertex(test_path,                                       &
+     &                        (/ 1.0_rprec, 1.0_rprec, 1.0_rprec /))
+      CALL path_append_vertex(test_path,                                       &
+     &                        (/ -1.0_rprec, -1.0_rprec, -1.0_rprec /))
+      CALL path_append_vertex(test_path,                                       &
+     &                        (/ -10.0_rprec, -5.0_rprec, -1.0_rprec /))
+      point = search_paths(test_path, search_context, path_test)
+      path_test = check(.true., path_test, 1, 'search_paths')
+      IF (.not.path_test) THEN
+         RETURN
+      END IF
+
+      path_test = check(0.0_rprec, SQRT(DOT_PRODUCT(point, point)), 2,         &
+     &                  'search_paths')
+
+      CALL path_destruct(test_path)
+      DEALLOCATE(search_context)
 
       END FUNCTION
 
@@ -1657,16 +1809,69 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                                       ::                    &
-     &   test_function
-      CLASS (integration_path_context_class), INTENT(in) :: context
-      REAL (rprec), DIMENSION(3), INTENT(in)             :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in)             :: dxcart
-      REAL (rprec), INTENT(in)                           :: length
-      REAL (rprec), INTENT(in)                           :: dx
+      REAL (rprec)                           :: test_function
+      CLASS (test_context), INTENT(in)       :: context
+      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
+      REAL (rprec), INTENT(in)               :: length
+      REAL (rprec), INTENT(in)               :: dx
 
 !  Start of executable code
       test_function = dx
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Call back function to test the search.
+!>
+!>  Returns true if the positions bound the loaction we are looking for.
+!>
+!>  @param[in] context Generic object that contains data for the integration
+!>                     function.
+!>  @param[in] xcart1  Lower test point.
+!>  @param[in] xcart2  Higher test point.
+!-------------------------------------------------------------------------------
+      FUNCTION test_search_function(context, xcart1, xcart2)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL                                 :: test_search_function
+      CLASS (test_search_context), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart1
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart2
+
+!  local parameters
+      REAL (rprec), PARAMETER                 :: tolarance = 1.0E-20
+
+!  Start of executable code
+      IF (xcart1(1) .gt. xcart2(1)) THEN
+         test_search_function = xcart1(1) .gt. 0 .and.                         &
+     &                          xcart2(1) .lt. 0
+      ELSE
+         test_search_function = xcart2(1) .gt. 0 .and.                         &
+     &                          xcart1(1) .lt. 0
+      END IF
+
+      IF (xcart1(2) .gt. xcart2(2)) THEN
+         test_search_function = test_search_function .and.                     &
+     &                          xcart1(2) .gt. 0     .and.                     &
+     &                          xcart2(2) .lt. 0
+      ELSE
+         test_search_function = test_search_function .and.                     &
+     &                          xcart2(2) .gt. 0     .and.                     &
+     &                          xcart1(2) .lt. 0
+      END IF
+
+      IF (xcart1(3) .gt. xcart2(3)) THEN
+         test_search_function = test_search_function .and.                     &
+     &                          xcart1(3) .gt. 0     .and.                     &
+     &                          xcart2(3) .lt. 0
+      ELSE
+         test_search_function = test_search_function .and.                     &
+     &                          xcart2(3) .gt. 0     .and.                     &
+     &                          xcart1(3) .lt. 0
+      END IF
 
       END FUNCTION
 
