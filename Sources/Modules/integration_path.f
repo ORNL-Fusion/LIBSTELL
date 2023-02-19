@@ -21,15 +21,6 @@
 !*******************************************************************************
 !  integration_path module parameters
 !*******************************************************************************
-!>  No qaudrature type.
-      INTEGER, PARAMETER :: path_none_type    = -1
-!>  Integrate the length in addition.
-      INTEGER, PARAMETER :: path_add_type     = 0
-!>  Integrate the path using Gauss Legendre Quadrature
-      INTEGER, PARAMETER :: path_gleg_type    = 1
-!>  Integrate the path using a hp approch.
-      INTEGER, PARAMETER :: path_hp_glep_type = 2
-
 !>  Default step size of the integration.
       REAL (rprec), PARAMETER :: path_default_dx = 0.0025
 
@@ -38,24 +29,6 @@
 !  1) vertex
 !
 !*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  Class containing the parameters of the integration method to use.
-!-------------------------------------------------------------------------------
-      TYPE path_int_class
-!>  Integration method to use.
-         INTEGER      :: method = path_none_type
-
-!>  Step size to use.
-         REAL (rprec) :: dx
-!>  Quadrature interval length.
-         REAL (rprec) :: length
-
-!>  Quadrature weights.
-         REAL (rprec), DIMENSION(:), POINTER :: weights
-!>  Quadrature abscissas.
-         REAL (rprec), DIMENSION(:), POINTER :: absc
-      END TYPE
-
 !-------------------------------------------------------------------------------
 !>  Base class containing the parameters of the integration method to use.
 !-------------------------------------------------------------------------------
@@ -137,35 +110,31 @@
       END INTERFACE
 
 !-------------------------------------------------------------------------------
-!>  Construction interface for integration_path_gleg_class construct0r
+!>  Construction interface for integration_path_gleg_class constructor
 !-------------------------------------------------------------------------------
       INTERFACE integration_path_gleg_class
          MODULE PROCEDURE integration_path_gleg_construct
       END INTERFACE
 
 !-------------------------------------------------------------------------------
-!>  Construction interface for integration_path_gleg_class construct0r
+!>  Construction interface for integration_path_gleg_class constructor
 !-------------------------------------------------------------------------------
       INTERFACE integration_path_hp_glep_class
          MODULE PROCEDURE integration_path_hp_glep_construct
       END INTERFACE
 
 !-------------------------------------------------------------------------------
-!>  Construction interface using either @ref path_construct_int or
-!>  @ref path_construct_vertex
+!>  Construction interface using @ref path_construct_vertex
 !-------------------------------------------------------------------------------
       INTERFACE path_construct
-         MODULE PROCEDURE path_construct_int,                                  &
-     &                    path_construct_vertex
+         MODULE PROCEDURE path_construct_vertex
       END INTERFACE
 
 !-------------------------------------------------------------------------------
-!>  Destruct interface using either @ref path_destruct_int or
-!>  @ref path_destruct_vertex
+!>  Destruct interface using @ref path_destruct_vertex
 !-------------------------------------------------------------------------------
       INTERFACE path_destruct
-         MODULE PROCEDURE path_destruct_int,                                   &
-     &                    path_destruct_vertex
+         MODULE PROCEDURE path_destruct_vertex
       END INTERFACE
 
 !-------------------------------------------------------------------------------
@@ -176,9 +145,7 @@
       END INTERFACE
 
       PRIVATE :: check, check_real, check_log, check_int,                      &
-     &           integrate, integrate_add, integrate_gleg,                     &
-     &           integrate_hp_gleg, search, test_function,                     &
-     &           search_path
+     &           test_function, search_path
 
       CONTAINS
 
@@ -330,59 +297,6 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
-!>  @brief Construct a single @ref path_int_class.
-!>
-!>  Allocates memory and initializes a @ref path_int_class object.
-!>
-!>  @param[in] method  Integartion method to use.
-!>  @param[in] npoints Number of quadrature points to use.
-!>  @param[in] length  Length of the interval.
-!>  @returns A pointer to a constructed @ref path_int_class object.
-!-------------------------------------------------------------------------------
-      FUNCTION path_construct_int(method, npoints, length)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (path_int_class), POINTER :: path_construct_int
-      CHARACTER (len=*), INTENT(in)  :: method
-      INTEGER, INTENT(in)            :: npoints
-      REAL (rprec), INTENT(in)       :: length
-
-!  Start of executable code
-      ALLOCATE(path_construct_int)
-
-      path_construct_int%dx = path_default_dx
-
-      SELECT CASE (method)
-
-         CASE ('add')
-            path_construct_int%method = path_add_type
-            path_construct_int%weights => null()
-            path_construct_int%absc => null()
-            RETURN
-
-         CASE ('gleg')
-            path_construct_int%method = path_gleg_type
-
-         CASE ('hp_gleg')
-            path_construct_int%method = path_hp_glep_type
-            path_construct_int%length = length
-
-         CASE DEFAULT
-            path_construct_int%method = path_none_type
-
-      END SELECT
-
-      ALLOCATE(path_construct_int%weights(npoints))
-      ALLOCATE(path_construct_int%absc(npoints))
-      CALL path_get_gaussqad_weights(0.0_rprec, 1.0_rprec,                     &
-     &                               path_construct_int%absc,                  &
-     &                               path_construct_int%weights)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
 !>  @brief Construct a single @ref vertex.
 !>
 !>  Allocates memory and initializes a @ref vertex object.
@@ -433,35 +347,6 @@
          DEALLOCATE(this%absc)
          this%absc => null()
       END IF
-
-      END SUBROUTINE
-
-!-------------------------------------------------------------------------------
-!>  @brief Deconstruct a @ref path_int_class object.
-!>
-!>  Deallocates memory and uninitializes a @ref path_int_class object.
-!>
-!>  @param[inout] this A @ref path_int_class instance.
-!-------------------------------------------------------------------------------
-      SUBROUTINE path_destruct_int(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (path_int_class), POINTER :: this
-
-!  Start of executable code
-      IF (ASSOCIATED(this%weights)) THEN
-         DEALLOCATE(this%weights)
-         this%weights => null()
-      END IF
-
-      IF (ASSOCIATED(this%absc)) THEN
-         DEALLOCATE(this%absc)
-         this%absc => null()
-      END IF
-
-      DEALLOCATE(this)
 
       END SUBROUTINE
 
@@ -571,59 +456,6 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
-!>  @brief Integrate along the path.
-!>
-!>  Recursively runs through the next vertex to find the last vertex. Once the
-!>  last vertex is found, integrate alone that path. The integrand is proveded
-!>  by means of call back function.
-!>
-!>  @param[in] this                 In instance of a @ref path_int_class
-!>                                  instance.
-!>  @param[in] path                 Starting @ref vertex to of the path to
-!>                                  integrate.
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @returns The total integrated path to the end.
-!-------------------------------------------------------------------------------
-      RECURSIVE FUNCTION path_integrate(this, path,                            &
-     &                                  integration_function, context)         &
-     &  RESULT(total)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                      :: total
-      TYPE (path_int_class), INTENT(in) :: this
-      TYPE (vertex), INTENT(in)         :: path
-      CHARACTER (len=1), INTENT(in)     :: context(:)
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         REAL (rprec)                           :: integration_function
-         CHARACTER (len=1), INTENT(in)          :: context(:)
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-         REAL (rprec), INTENT(in)               :: length
-         REAL (rprec), INTENT(in)               :: dx
-         END FUNCTION
-      END INTERFACE
-
-!  Start of executable code
-      If (ASSOCIATED(path%next)) THEN
-         total = path_integrate(this, path%next, integration_function,         &
-     &                          context)
-         total = total + integrate(this, context, path, path%next,             &
-     &                             integration_function)
-      ELSE
-         total = 0.0
-      END IF
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
 !>  @brief Search along the path.
 !>
 !>  Recursively runs through the next vertex to find the last vertex. Once the
@@ -654,55 +486,6 @@
          found = search_path(context, path, path%next, xcart)
          IF (.not.found) THEN
             xcart = search_paths(path%next, context, found)
-         END IF
-      END IF
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Search along the path.
-!>
-!>  Recursively runs through the next vertex to find the last vertex. Once the
-!>  last vertex is found, a new vertex is allocated and appended to the path.
-!>  The integrand is proveded by means of call back function.
-!>
-!>  @param[in]  path            Starting vertex to begin search.
-!>  @param      search_function Function pointer that defines the search
-!>                              criteria.
-!>  @param[in]  context         Generic object that contains data for the
-!>                              integration function.
-!>  @param[out] found           Signals if the condition was met.
-!>  @returns The vertex position along the path where the search condition was
-!>           found.
-!-------------------------------------------------------------------------------
-      RECURSIVE FUNCTION path_search(path, search_function, context,           &
-     &                               found) RESULT(xcart)
-
-      IMPLICIT NONE
-
-      REAL (rprec), DIMENSION(3)    :: xcart
-      TYPE (vertex), INTENT(in)     :: path
-      CHARACTER (len=1), INTENT(in) :: context(:)
-      LOGICAL, INTENT(out)          :: found
-      INTERFACE
-         FUNCTION search_function(context, xcart1, xcart2)
-         USE stel_kinds
-         LOGICAL                                :: search_function
-         CHARACTER (len=1), INTENT(in)          :: context(:)
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart1
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart2
-         END FUNCTION
-      END INTERFACE
-
-!  Start of executable code
-      found = .false.
-
-      IF (ASSOCIATED(path%next)) THEN
-         found = search(context, path, path%next, search_function,             &
-     &                  xcart)
-         IF (.not.found) THEN
-            xcart = path_search(path%next, search_function, context,           &
-     &                          found)
          END IF
       END IF
 
@@ -923,303 +706,6 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
-!>  @brief Line integrate between to points.
-!>
-!>  This chooses the specific integration method.
-!>
-!>  @param[in] this                 In instance of a @ref path_int_class
-!>                                  instance.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @param[in] vertex1              Starting point.
-!>  @param[in] vertex2              Ending point.
-!>  @param[in] dxinput              optional input allowing user to define dx
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
-!>  @returns The path integrated value between the vertex1 and vertex2.
-!-------------------------------------------------------------------------------
-      FUNCTION integrate(this, context, vertex1, vertex2,                      &
-     &                   integration_function)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                      :: integrate
-      TYPE (path_int_class), INTENT(in) :: this
-      CHARACTER(len=1), INTENT(in)      :: context(:)
-      TYPE (vertex), INTENT(in)         :: vertex1
-      TYPE (vertex), INTENT(in)         :: vertex2
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         REAL (rprec) :: integration_function
-         CHARACTER (len=1), INTENT(in)          :: context(:)
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-         REAL (rprec), INTENT(in)               :: length
-         REAL (rprec), INTENT(in)               :: dx
-         END FUNCTION
-      END INTERFACE
-
-!  Start of executable code
-      SELECT CASE (this%method)
-
-         CASE (path_add_type)
-            integrate = integrate_add(this, context, vertex1, vertex2,         &
-     &                                integration_function)
-
-         CASE (path_gleg_type)
-            integrate = integrate_gleg(this, context, vertex1,                 &
-     &                                 vertex2, integration_function)
-
-         CASE (path_hp_glep_type)
-            integrate =                                                        &
-     &         integrate_hp_gleg(this, context, vertex1, vertex2,              &
-     &                           integration_function)
-
-         CASE DEFAULT
-            integrate = 0.0
-
-      END SELECT
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Line integrate between to points.
-!>
-!>  This divids the straight line path defined by two vertices and line
-!>  integrates the function. The integrand is proveded by means of call back
-!>  function.
-!>
-!>  @param[in] this                 In instance of a @ref path_int_class
-!>                                  instance.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @param[in] vertex1              Starting point.
-!>  @param[in] vertex2              Ending point.
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
-!>  @returns The path integrated value between the vertex1 and vertex2.
-!-------------------------------------------------------------------------------
-      FUNCTION integrate_add(this, context, vertex1, vertex2,                  &
-     &                       integration_function)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                      :: integrate_add
-      TYPE (path_int_class), INTENT(in) :: this
-      CHARACTER(len=1), INTENT(in)      :: context(:)
-      TYPE (vertex), INTENT(in)         :: vertex1
-      TYPE (vertex), INTENT(in)         :: vertex2
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         REAL (rprec) :: integration_function
-         CHARACTER (len=1), INTENT(in)          :: context(:)
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart, dxcart
-         REAL (rprec), INTENT(in)               :: length, dx
-         END FUNCTION
-      END INTERFACE
-
-!  local variables
-      REAL (rprec), DIMENSION(3)        :: xcart
-      REAL (rprec), DIMENSION(3)        :: dxcart
-      REAL (rprec)                      :: length
-      REAL (rprec)                      :: dx
-      INTEGER                           :: i, nsteps
-
-!  Start of executable code
-!  Determine the number of integration steps to take by dividing the path length
-!  by the step length and rounding to the nearest integer.
-      dxcart = vertex2%position - vertex1%position
-      length = SQRT(DOT_PRODUCT(dxcart, dxcart))
-      nsteps = INT(length/this%dx)
-!  Choose the actual step size.
-      dxcart = dxcart/nsteps
-      dx = SQRT(DOT_PRODUCT(dxcart, dxcart))
-
-      
-!  Integrate the length in addition.
-      integrate_add = 0.0
-      length = 0.0
-      xcart = vertex1%position
-      DO i = 1, nsteps
-         xcart = xcart + dxcart
-         length = length + dx
-         integrate_add = integrate_add                                         &
-     &                 + integration_function(context, xcart, dxcart,          &
-     &                                        length, dx)
-      END DO
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Integrate between to points using Guass-Legendre quadrature.
-!>
-!>  This divids the straight line path defined by two vertices and line
-!>  integrates the function. The integrand is proveded by means of call back
-!>  function.
-!>
-!>  @param[in] this                 In instance of a @ref path_int_class
-!>                                  instance.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @param[in] vertex1              Starting point.
-!>  @param[in] vertex2              Ending point.
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
-!>  @returns The path integrated value between the vertex1 and vertex2.
-!-------------------------------------------------------------------------------
-      FUNCTION integrate_gleg(this, context, vertex1, vertex2,                 &
-     &                        integration_function)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                      :: integrate_gleg
-      TYPE (path_int_class), INTENT(in) :: this
-      CHARACTER(len=1), INTENT(in)      :: context(:)
-      TYPE (vertex), INTENT(in)         :: vertex1
-      TYPE (vertex), INTENT(in)         :: vertex2
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         REAL (rprec) :: integration_function
-         CHARACTER (len=1), INTENT(in)          :: context(:)
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-         REAL (rprec), INTENT(in)               :: length
-         REAL (rprec), INTENT(in)               :: dx
-         END FUNCTION
-      END INTERFACE
-
-!  local variables
-      REAL (rprec), DIMENSION(3)        :: xcart
-      REAL (rprec), DIMENSION(3)        :: xcart1
-      REAL (rprec), DIMENSION(3)        :: dxcart
-      REAL (rprec)                      :: length
-      REAL (rprec)                      :: temp_length
-      REAL (rprec)                      :: dx
-      INTEGER                           :: i
-
-!  Start of executable code
-
-!  Determine the number of integration steps to take by dividing the path length
-!  by the step length and rounding to the nearest integer.
-      dxcart = vertex2%position - vertex1%position
-      length = SQRT(DOT_PRODUCT(dxcart, dxcart))
-      dxcart(:) = dxcart(:)/length
-
-!  Integrate the length using Gauss-Legendre quadrature
-      integrate_gleg = 0.0
-      xcart = vertex1%position
-      DO i = 1, SIZE(this%weights)
-         xcart = vertex1%position + this%absc(i)*dxcart*length
-         temp_length = this%absc(i)*length
-
-         integrate_gleg = integrate_gleg +                                     &
-     &      this%weights(i)*integration_function(context, xcart,               &
-     &                                           dxcart, temp_length,          &
-     &                                           1.0_rprec)
-      END DO
-      integrate_gleg = integrate_gleg*length
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Integrate between to points using hp Guass-Legendre quadrature
-!>  method.
-!>
-!>  This divids the straight line path defined by two vertices into a set of
-!>  intergval of length len. Then Gauss-Legendre quadrature is used to
-!>  integrate the function across each interval. The integrand is provided by
-!>  means of call back function.
-!>
-!>  @param[in] this                 In instance of a @ref path_int_class
-!>                                  instance.
-!>  @param[in] context              Generic object that contains data for the
-!>                                  integration function.
-!>  @param[in] vertex1              Starting point.
-!>  @param[in] vertex2              Ending point.
-!>  @param     integration_function Function pointer that defines the
-!>                                  integrand.
-!>  @returns The path integrated value between the vertex1 and vertex2.
-!-------------------------------------------------------------------------------
-      FUNCTION integrate_hp_gleg(this, context, vertex1, vertex2,              &
-     &                           integration_function)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                      :: integrate_hp_gleg
-      TYPE (path_int_class), INTENT(in) :: this
-      CHARACTER(len=1), INTENT(in)      :: context(:)
-      TYPE (vertex), INTENT(in)         :: vertex1
-      TYPE (vertex), INTENT(in)         :: vertex2
-      INTERFACE
-         FUNCTION integration_function(context, xcart, dxcart,                 &
-     &                                 length, dx)
-         USE stel_kinds
-         REAL (rprec) :: integration_function
-         CHARACTER (len=1), INTENT(in)          :: context(:)
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-         REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-         REAL (rprec), INTENT(in)               :: length
-         REAL (rprec), INTENT(in)               :: dx
-         END FUNCTION
-      END INTERFACE
-
-!  local variables
-      REAL (rprec), DIMENSION(3)        :: xcart
-      REAL (rprec), DIMENSION(3)        :: xcart1
-      REAL (rprec), DIMENSION(3)        :: dxcart
-      REAL (rprec)                      :: length
-      REAL (rprec)                      :: lengthp
-      REAL (rprec)                      :: temp_length
-      INTEGER                           :: i
-      INTEGER                           :: j
-      INTEGER                           :: nsteps
-      REAL (rprec)                      :: int_length
-      REAL (rprec)                      :: integratej
-
-!  Start of executable code
-
-!  Determine the number of integration steps to take by dividing the path length
-!  by the step length and rounding to the nearest integer.
-      dxcart = vertex2%position - vertex1%position
-      length = SQRT(DOT_PRODUCT(dxcart, dxcart))
-      dxcart(:) = dxcart(:)/length
-
-      nsteps =  INT(length/this%length)
-      int_length = length/REAL(nsteps, rprec)
-
-!  Integrate the length using Gauss-Legendre quadrature
-      integrate_hp_gleg = 0.0
-      xcart = vertex1%position
-      lengthp = 0.0
-      DO j = 1, nsteps
-         integratej = 0.0
-         DO i = 1, SIZE(this%weights)
-            xcart1 = xcart + this%absc(i)*dxcart*int_length
-            temp_length = lengthp + this%absc(i)*int_length
-            integratej = integratej +                                          &
-     &         this%weights(i)*integration_function(context, xcart1,           &
-     &                                              dxcart, temp_length,       &
-     &                                              1.0_rprec)
-         END DO
-
-         integrate_hp_gleg = integrate_hp_gleg + integratej*int_length
-         lengthp = lengthp + int_length
-         xcart = xcart + dxcart*int_length
-      END DO
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
 !>  @brief Search line between to points.
 !>
 !>  This divides the straight line path defined by two vertices and searched for
@@ -1276,87 +762,6 @@
             DO WHILE (SQRT(DOT_PRODUCT(dxcart, dxcart)) .gt. dxFine)
                dxcart = dxcart/2.0
                IF (.not.context%run(xcart, xcart + dxcart)) THEN
-                  xcart = xcart + dxcart
-               END IF
-            END DO
-
-            xcart = xcart + dxcart/2.0
-            RETURN
-
-         END IF
-
-         xcart = xcart + dxcart
-      END DO
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Search line between to points.
-!>
-!>  This divides the straight line path defined by two vertices and searched for
-!>  a condition. The search criteria is proveded by means of call back function.
-!>
-!>  @param[in] context          Generic object that contains data for the search
-!>                              function.
-!>  @param[in]  vertex1         Starting point.
-!>  @param[in]  vertex2         Ending point.
-!>  @param      search_function Function pointer that defines the search
-!>                              criteria.
-!>  @param[out] xcart           Point where the search criteria was found.
-!>  @returns True if the criteria was met between vertex1 and vertex2.
-!-------------------------------------------------------------------------------
-      FUNCTION search(context, vertex1, vertex2, search_function, xcart)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      LOGICAL                                 :: search
-      CHARACTER(len=1), INTENT(in)            :: context(:)
-      TYPE (vertex), INTENT(in)               :: vertex1
-      TYPE (vertex), INTENT(in)               :: vertex2
-      REAL (rprec), DIMENSION(3), INTENT(out) :: xcart
-      INTERFACE
-         FUNCTION search_function(context, xcart1, xcart2)
-         USE stel_kinds
-         LOGICAL                                :: search_function
-         CHARACTER (len=1), INTENT(in)          :: context(:)
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart1
-         REAL (rprec), DIMENSION(3), INTENT(in) :: xcart2
-         END FUNCTION
-      END INTERFACE
-
-!  local variables
-      REAL (rprec), DIMENSION(3)              :: dxcart
-      REAL (rprec)                            :: dx
-      INTEGER                                 :: i
-      INTEGER                                 :: nsteps
-
-!  local parameters
-      REAL (rprec), PARAMETER                 :: dxCourse = 0.01
-      REAL (rprec), PARAMETER                 :: dxFine = 1.0E-20
-
-!  Start of executable code
-!  Determine the number of integration steps to take by dividing the path length
-!  by the step length and rounding to the nearest integer.
-      dxcart = vertex2%position - vertex1%position
-      nsteps = INT(SQRT(DOT_PRODUCT(dxcart, dxcart))/dxCourse)
-
-!  Choose the actual step size.
-      dxcart = dxcart/nsteps
-
-      search = .false.
-      xcart = vertex1%position
-
-!  Linearly search the line until an interval containing the point is detected.
-      DO i = 1, nsteps
-         search = search_function(context, xcart, xcart + dxcart)
-         IF (search) THEN
-
-!  Found an interval. Bisect the interval until the length is machine precision.
-            DO WHILE (SQRT(DOT_PRODUCT(dxcart, dxcart)) .gt. dxFine)
-               dxcart = dxcart/2.0
-               IF (.not.search_function(context, xcart,                        &
-     &                                  xcart + dxcart)) THEN
                   xcart = xcart + dxcart
                END IF
             END DO
