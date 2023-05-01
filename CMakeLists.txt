@@ -22,7 +22,11 @@ OPTION (USE_FAST_COPY "Activate code fast copies." OFF)
 #  Fortran specific settings. The first setting tells the compiler to use the C
 #  preprocessor.
 target_compile_options (stell
-                        PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-cpp>
+
+                        PUBLIC
+
+                        $<$<COMPILE_LANGUAGE:Fortran>:-cpp>
+                        $<$<Fortran_COMPILER_ID:Intel>:-assume byterecl>
 )
 target_compile_definitions (stell
 
