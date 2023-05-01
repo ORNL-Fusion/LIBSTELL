@@ -26,7 +26,7 @@ target_compile_options (stell
                         PUBLIC
 
                         $<$<COMPILE_LANGUAGE:Fortran>:-cpp>
-                        $<AND:$<Fortran_COMPILER_ID:Intel>,$<COMPILE_LANGUAGE:Fortran>:-assume byterecl>
+                        $<$<AND:$<Fortran_COMPILER_ID:Intel>,$<COMPILE_LANGUAGE:Fortran>>:-assume byterecl>
 )
 target_compile_definitions (stell
 
