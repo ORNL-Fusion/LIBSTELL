@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 ///  Flag to copy the enture file.
 #define COPYFILE_ALL 0
