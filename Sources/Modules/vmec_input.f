@@ -21,6 +21,10 @@
 !>     @item{niter,                  Maximum number of iterations to run. @b DEPRECATED @b
 !>                                   Use @ref vmec_input::niter_array instead.,              vmec_input::niter}
 !>     @item{niter_array,            Array of iterations for the multigrid runs.,            vmec_input::niter_array}
+!>     @iten{pre_niter,              Number of iterations to run after the preconditioner is
+!>                                   activated. There special control values.
+!>                                   -# -1 Default behavor.
+!>                                   -# -2 Keep niter intact.                                vmec_input::pre_niter}
 !>     @item{time_slice,             Time index value to label the output files.,            vmec_input::time_slice}
 !>     @item{nstep,                  Number of iterations between screen output.,            vmec_input::nstep}
 !>     @item{nvacskip,               Number of iterations between vacuum responses.,         vmec_input::nvacskip}
@@ -266,6 +270,8 @@
       INTEGER                            :: niter
 !>  Array of iterations for the multigrid runs.
       INTEGER, DIMENSION(max_grids)      :: niter_array
+!>  Number of iterations to run after the preconditoner is activated.
+      INTEGER                            :: pre_niter
 !>  Time index value to label the output files.
       REAL (rprec)                       :: time_slice
 !>  Number of iterations between screen output.
@@ -493,8 +499,8 @@
 !  Declare namelist
       NAMELIST /indata/                                                        &
 !  Control Parameters.
-     &   omp_num_threads, gamma, niter, niter_array, time_slice, nstep,        &
-     &   nvacskip, delt, ftol, ftol_array, tcon0,                              &
+     &   omp_num_threads, gamma, niter, niter_array, pre_niter,                &
+     &   time_slice, nstep, nvacskip, delt, ftol, ftol_array, tcon0,           &
 !  Precondicioner control parameters.
      &   precon_type, prec2d_threshold,                                        &
 !  Early termination control parameters.
@@ -557,7 +563,8 @@
 !  Control Parameters.
       omp_num_threads = 8
       gamma = 0
-      niter_array = -1;
+      niter_array = -1
+      pre_niter = -1
       time_slice = 0
       niter = 100
       nstep = 10

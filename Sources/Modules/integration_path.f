@@ -442,8 +442,8 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(path%next)) THEN
-          total = this%integrate(path%next, context)
-          total = this%integrate(context, path, path%next)
+         total = this%integrate(path%next, context)
+         total = this%integrate(context, path, path%next)
       ELSE
          total = 0.0
       END IF
