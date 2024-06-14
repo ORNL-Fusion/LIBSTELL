@@ -55,4 +55,6 @@
          CALL EXIT(1)
       END IF
 
+      WRITE (*,*) 'All tests passed.'
+
       END PROGRAM
