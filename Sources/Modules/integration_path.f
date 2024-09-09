@@ -160,12 +160,12 @@
 !>  @param[in] length  Length of the interval.
 !>  @returns A pointer to a constructed @ref integration_path_class object.
 !-------------------------------------------------------------------------------
-      FUNCTION make_integrator(method, npoints, length)
+      FUNCTION make_integrator(method, npoints, length) RESULT(res)
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      CLASS (integration_path_class), POINTER :: make_integrator
+      CLASS (integration_path_class), POINTER :: res
       CHARACTER (len=*), INTENT(in)           :: method
       INTEGER, INTENT(in)                     :: npoints
       REAL (rprec), INTENT(in)                :: length
@@ -179,14 +179,13 @@
       SELECT CASE (method)
 
          CASE ('add')
-            make_integrator => integration_path_class()
+            res => integration_path_class()
 
          CASE ('gleg')
-            make_integrator => integration_path_gleg_class(npoints)
+            res => integration_path_gleg_class(npoints)
 
          CASE ('hp_gleg')
-            make_integrator => integration_path_hp_glep_class(npoints,         &
-     &                                                        length)
+            res => integration_path_hp_glep_class(npoints, length)
 
       END SELECT
 
@@ -442,8 +441,8 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(path%next)) THEN
-         total = this%integrate(path%next, context)
-         total = total + this%integrate(context, path, path%next)
+         total = this%integrate_paths(path%next, context)                            &
+     &         + this%integrate_path(context, path, path%next)
       ELSE
          total = 0.0
       END IF
@@ -997,8 +996,7 @@
      &                        (/ 2.0_rprec, 0.0_rprec, 0.0_rprec /))
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 0.0_rprec, 0.0_rprec, 0.0_rprec /))
-      result = integration_path_integrate_paths(int_params, test_path,         &
-     &                                          context)
+      result = int_params%integrate(test_path, context)
       path_test = check(2.0_rprec, result, 1, 'path_integrate')
       IF (.not.path_test) THEN
          RETURN
