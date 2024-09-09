@@ -321,7 +321,7 @@
          y_value_int = 0.0
       ELSE
          y_value_int = slope(yy, xx, ilow, ihigh)                              &
-     &               / 2.0*(x1**2.0 - x0**2.0)                                 &
+     &               / 2.0*(x1*x1 - x0*x0)                                     &
      &               + offset(yy, xx, ilow, ihigh)*(x1 - x0)
       END IF
 
