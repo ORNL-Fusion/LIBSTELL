@@ -443,7 +443,7 @@
 
       IF (ASSOCIATED(path%next)) THEN
          total = this%integrate(path%next, context)
-         total = this%integrate(context, path, path%next)
+         total = total + this%integrate(context, path, path%next)
       ELSE
          total = 0.0
       END IF
@@ -997,7 +997,8 @@
      &                        (/ 2.0_rprec, 0.0_rprec, 0.0_rprec /))
       CALL path_append_vertex(test_path,                                       &
      &                        (/ 0.0_rprec, 0.0_rprec, 0.0_rprec /))
-      result = int_params%integrate(test_path, context)
+      result = integration_path_integrate_paths(int_params, test_path,         &
+     &                                          context)
       path_test = check(2.0_rprec, result, 1, 'path_integrate')
       IF (.not.path_test) THEN
          RETURN
