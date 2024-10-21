@@ -54,9 +54,9 @@ target_link_libraries (stell
                        $<$<AND:$<BOOL:${LAPACK_FOUND}>,$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.18>>:LAPACK::LAPACK>
                        $<$<AND:$<BOOL:${BLAS_FOUND}>,$<VERSION_LESS:${CMAKE_VERSION},3.18>>:${BLAS_LIBRARIES}>
                        $<$<AND:$<BOOL:${LAPACK_FOUND}>,$<VERSION_LESS:${CMAKE_VERSION},3.18>>:${LAPACK_LIBRARIES}>
-#                       sanitizer
-#                       traps
-#                       checks
+                       sanitizer
+                       traps
+                       checks
 )
 target_include_directories (stell
 
