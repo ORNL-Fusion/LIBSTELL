@@ -12,6 +12,7 @@
       USE coordinate_utilities
       USE functions
       USE integration_path
+      USE gradient_descent
 
       IMPLICIT NONE
 
@@ -45,6 +46,13 @@
 ! Integration path tests
       IF (path_test()) THEN
          WRITE (*,*) 'Integration Path Test Passed'
+      ELSE
+         tests_failed = .true.
+      END IF
+
+!  Gradient Descent test.
+      IF (gradient_descent_test()) THEN
+         WRITE (*,*) 'Gradient Descent Test Passed'
       ELSE
          tests_failed = .true.
       END IF
