@@ -167,12 +167,11 @@
 !  UNIT TESTS
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-!>  @brief Construct a @ref vertex.
+!>  @brief Construct a @ref gradient_descent_test_class.
 !>
-!>  Allocates memory and initializes a @ref vertex object.
+!>  Allocates memory and initializes a @ref gradient_descent_test_class object.
 !>
-!>  @param[in] position Cartesian position of the vertex object.
-!>  @returns A pointer to a constructed @ref vertex object.
+!>  @returns A pointer to a constructed @ref gradient_descent_test_class object.
 !-------------------------------------------------------------------------------
       FUNCTION gradient_descent_test_construct()
 
@@ -248,7 +247,7 @@
 !  local variables
       REAL (rprec)                                 :: start_time
       REAL (rprec)                                 :: residule
-      CLASS (gradient_descent_test_class), POINTER :: context
+      CLASS (gradient_descent_test_class), POINTER :: context => null()
 
 !  Start of executable code
       start_time = profiler_get_start_time()
