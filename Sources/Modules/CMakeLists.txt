@@ -24,6 +24,7 @@ target_sources(stell
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/gade_mod.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/integration_path_context.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/integration_path.f>
+               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/gradient_descent.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ipch_T.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/magnetic_response.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/math_utilities.f>
