@@ -8,7 +8,7 @@ Provides the following variables:
 
 # Find it manually.
 find_library (SCALAPACK_LIBRARY
-              NAMES scalapack scalapack-openmpi mkl_scalapack_ilp64
+              NAMES scalapack scalapack-openmpi mkl_scalapack_ilp64 ${SCALAPACK_NAME}
               DOC "scalapack library")
 
 find_library (BLACS_LIBRARY
