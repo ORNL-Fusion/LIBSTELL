@@ -24,7 +24,7 @@
 !>     @item{pre_niter,              Number of iterations to run after the preconditioner is
 !>                                   activated. There are special control values.
 !>                                   -# -1 Default behavor.
-!>                                   -# -2 Keep niter intact.                                vmec_input::pre_niter}
+!>                                   -# -2 Keep niter intact.,                               vmec_input::pre_niter}
 !>     @item{time_slice,             Time index value to label the output files.,            vmec_input::time_slice}
 !>     @item{nstep,                  Number of iterations between screen output.,            vmec_input::nstep}
 !>     @item{nvacskip,               Number of iterations between vacuum responses.,         vmec_input::nvacskip}
@@ -211,7 +211,7 @@
 !>    am_aux_s = 0.0, 1.0,
 !>    am_aux_f = 1.0, 0.0,
 !>  /
-!>  @end code
+!>  @endcode
 !>
 !>  @section vmec_namelist_prog_ref_sec Programmers Reference
 !>  Reference material for the coding to implement this namelist is found in the
