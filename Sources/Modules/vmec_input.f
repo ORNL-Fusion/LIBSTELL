@@ -5,7 +5,7 @@
 !  aliases are separated by ','. If you intended ',' to be a string you must use
 !  an escaped comma '\,'.
 !
-!>  @page vmec_namelist_sec Namelist indata definition
+!>  @page vmec_namelist_sec VMEC Namelist indata definition
 !>
 !>  @tableofcontents
 !>  @section vmec_namelist_intro_sec Introduction
@@ -21,8 +21,8 @@
 !>     @item{niter,                  Maximum number of iterations to run. @b DEPRECATED @b
 !>                                   Use @ref vmec_input::niter_array instead.,              vmec_input::niter}
 !>     @item{niter_array,            Array of iterations for the multigrid runs.,            vmec_input::niter_array}
-!>     @iten{pre_niter,              Number of iterations to run after the preconditioner is
-!>                                   activated. There special control values.
+!>     @item{pre_niter,              Number of iterations to run after the preconditioner is
+!>                                   activated. There are special control values.
 !>                                   -# -1 Default behavor.
 !>                                   -# -2 Keep niter intact.                                vmec_input::pre_niter}
 !>     @item{time_slice,             Time index value to label the output files.,            vmec_input::time_slice}
