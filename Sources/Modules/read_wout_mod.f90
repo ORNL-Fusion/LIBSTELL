@@ -176,7 +176,7 @@
         ln_bmnc = 'cosmn component of mod-B, half mesh',                &
         ln_bsubumnc = 'cosmn covariant u-component of B, half mesh',    &
         ln_bsubvmnc = 'cosmn covariant v-component of B, half mesh',    &
-        ln_bsubsmns = 'sinmn covariant s-component of B, half mesh',    &
+        ln_bsubsmns = 'sinmn covariant s-component of B, full mesh',    &
 
         ln_bsubumnc_sur = 'cosmn bsubu of B, surface',                  &
         ln_bsubvmnc_sur = 'cosmn bsubv of B, surface',                  &
@@ -192,7 +192,7 @@
         ln_bmns = 'sinmn component of mod-B, half mesh',                &
         ln_bsubumns = 'sinmn covariant u-component of B, half mesh',    &
         ln_bsubvmns = 'sinmn covariant v-component of B, half mesh',    &
-        ln_bsubsmnc = 'cosmn covariant s-component of B, half mesh',    &
+        ln_bsubsmnc = 'cosmn covariant s-component of B, full mesh',    &
 
         ln_currumnc = 'cosmn covariant u-component of J, full mesh',    &
         ln_currumns = 'sinmn covariant u-component of J, full mesh',    &
@@ -1624,8 +1624,12 @@
 
       DO js = 2, ns_-1
          WHERE (MOD(INT(xm_nyq_),2) .EQ. 1)
-            t1 = 0.5_dp*(shalf(js+1)*bsubsmns_(:,js+1)                         &
-               +         shalf(js)  *bsubsmns_(:,js)) /sfull(js)
+!  In JXBFORCE, bsubs was placed on the full grid. There is no need to convert
+!  this here. This fixes a spurious m=1 current signal in V3FIT for vacuum
+!  equilibria.
+!            t1 = 0.5_dp*(shalf(js+1)*bsubsmns_(:,js+1)                         &
+!               +         shalf(js)  *bsubsmns_(:,js)) /sfull(js)
+            t1 = bsubsmns_(:,js)
             bu0 = bsubumnc_(:,js  )/shalf(js)
             bu1 = bsubumnc_(:,js+1)/shalf(js+1)
             t2 = ohs*(bu1-bu0)*sfull(js)+0.25_dp*(bu0+bu1)/sfull(js)
@@ -1633,7 +1637,8 @@
             bv1 = bsubvmnc_(:,js+1)/shalf(js+1)
             t3 = ohs*(bv1-bv0)*sfull(js)+0.25_dp*(bv0+bv1)/sfull(js)
          ELSEWHERE
-            t1 = 0.5_dp*(bsubsmns_(:,js+1)+bsubsmns_(:,js))
+!            t1 = 0.5_dp*(bsubsmns_(:,js+1)+bsubsmns_(:,js))
+            t1 = bsubsmns_(:,js)
             t2 = ohs*(bsubumnc_(:,js+1)-bsubumnc_(:,js))
             t3 = ohs*(bsubvmnc_(:,js+1)-bsubvmnc_(:,js))
          ENDWHERE
@@ -1657,8 +1662,12 @@
 
       DO js = 2, ns_-1
          WHERE (MOD(INT(xm_nyq_),2) .EQ. 1)
-            t1 = 0.5_dp*(shalf(js+1)*bsubsmnc_(:,js+1)                         &
-               +         shalf(js)  *bsubsmnc_(:,js)) / sfull(js)
+!  In JXBFORCE, bsubs was placed on the full grid. There is no need to convert
+!  this here. This fixes a spurious m=1 current signal in V3FIT for vacuum
+!  equilibria.
+!            t1 = 0.5_dp*(shalf(js+1)*bsubsmnc_(:,js+1)                         &
+!               +         shalf(js)  *bsubsmnc_(:,js)) / sfull(js)
+            t1 = bsubsmnc_(:,js)
             bu0 = bsubumns_(:,js  )/shalf(js)
             bu1 = bsubumns_(:,js+1)/shalf(js+1)
             t2 = ohs*(bu1-bu0)*sfull(js) + 0.25_dp*(bu0+bu1)/sfull(js)
@@ -1666,7 +1675,8 @@
             bv1 = bsubvmns_(:,js+1)/shalf(js+1)
             t3 = ohs*(bv1-bv0)*sfull(js)+0.25_dp*(bv0+bv1)/sfull(js)
          ELSEWHERE
-            t1 = 0.5_dp*(bsubsmnc_(:,js+1) + bsubsmnc_(:,js))
+!            t1 = 0.5_dp*(bsubsmnc_(:,js+1) + bsubsmnc_(:,js))
+            t1 = bsubsmnc_(:,js)
             t2 = ohs*(bsubumns_(:,js+1)-bsubumns_(:,js))
             t3 = ohs*(bsubvmns_(:,js+1)-bsubvmns_(:,js))
          END WHERE
