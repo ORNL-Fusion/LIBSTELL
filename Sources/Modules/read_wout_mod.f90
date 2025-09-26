@@ -79,6 +79,7 @@
         vn_bsupumnc = 'bsupumnc', vn_bsupvmnc = 'bsupvmnc',             &
         vn_rmns = 'rmns', vn_zmnc = 'zmnc',                             &
         vn_lmnc = 'lmnc', vn_gmns = 'gmns', vn_bmns = 'bmns',           &
+        vn_lmnsf = 'lmnsf', vn_lmncf = 'lmncf',                         &
         vn_bsubumns = 'bsubumns', vn_bsubvmns = 'bsubvmns',             &
         vn_bsubsmnc = 'bsubsmnc', vn_bsupumns = 'bsupumns',             &
         vn_currumnc = 'currumnc', vn_currumns = 'currumns',             &
@@ -172,6 +173,7 @@
         ln_rmnc = 'cosmn component of cylindrical R, full mesh',        &
         ln_zmns = 'sinmn component of cylindrical Z, full mesh',        &
         ln_lmns = 'sinmn component of lambda, half mesh',               &
+        ln_lmnsf = 'sinmn component of lambda, full mesh',              &
         ln_gmnc = 'cosmn component of jacobian, half mesh',             &
         ln_bmnc = 'cosmn component of mod-B, half mesh',                &
         ln_bsubumnc = 'cosmn covariant u-component of B, half mesh',    &
@@ -188,6 +190,7 @@
         ln_rmns = 'sinmn component of cylindrical R, full mesh',        &
         ln_zmnc = 'cosmn component of cylindrical Z, full mesh',        &
         ln_lmnc = 'cosmn component of lambda, half mesh',               &
+        ln_lmncf = 'cosmn component of lambda, full mesh',              &
         ln_gmns = 'sinmn component of jacobian, half mesh',             &
         ln_bmns = 'sinmn component of mod-B, half mesh',                &
         ln_bsubumns = 'sinmn covariant u-component of B, half mesh',    &
