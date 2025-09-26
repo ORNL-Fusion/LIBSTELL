@@ -232,7 +232,7 @@
       REAL(rprec), DIMENSION(:,:), ALLOCATABLE ::                       &
           rmnc, zmns, lmns, rmns, zmnc, lmnc, bmnc, gmnc, bsubumnc,     &
           bsubvmnc, bsubsmns, bsupumnc, bsupvmnc, currvmnc,             &
-          currumnc, bbc, raxis, zaxis
+          currumnc, bbc, raxis, zaxis, lmnsf, lmncf
       REAL(rprec), DIMENSION(:,:), ALLOCATABLE ::                       &
           bmns, gmns, bsubumns, bsubvmns, bsubsmnc,                     &
           bsupumns, bsupvmns, currumns, currvmns
@@ -1024,6 +1024,8 @@
       ALLOCATE (zmns(dimlens(1),dimlens(2)), stat = ierror)
       CALL cdf_inquire(nwout, vn_lmns, dimlens)
       ALLOCATE (lmns(dimlens(1),dimlens(2)), stat = ierror)
+      CALL cdf_inquire(nwout, vn_lmnsf, dimlens)
+      ALLOCATE (lmnsf(dimlens(1),dimlens(2)), stat = ierror)
       CALL cdf_inquire(nwout, vn_gmnc, dimlens)
       ALLOCATE (gmnc(dimlens(1),dimlens(2)), stat = ierror)
       CALL cdf_inquire(nwout, vn_bmnc, dimlens)
@@ -1065,6 +1067,8 @@
       ALLOCATE (zmnc(dimlens(1),dimlens(2)), stat = ierror)
       CALL cdf_inquire(nwout, vn_lmnc, dimlens)
       ALLOCATE (lmnc(dimlens(1),dimlens(2)), stat = ierror)
+      CALL cdf_inquire(nwout, vn_lmncf, dimlens)
+      ALLOCATE (lmncf(dimlens(1),dimlens(2)), stat = ierror)
       CALL cdf_inquire(nwout, vn_gmns, dimlens)
       ALLOCATE (gmns(dimlens(1),dimlens(2)), stat = ierror)
       CALL cdf_inquire(nwout, vn_bmns, dimlens)
@@ -1136,6 +1140,7 @@
       CALL cdf_read(nwout, vn_rmnc, rmnc)
       CALL cdf_read(nwout, vn_zmns, zmns)
       CALL cdf_read(nwout, vn_lmns, lmns)
+      CALL cdf_read(nwout, vn_lmnsf, lmnsf)
       CALL cdf_read(nwout, vn_gmnc, gmnc)              !Half mesh
       CALL cdf_read(nwout, vn_bmnc, bmnc)              !Half mesh
       CALL cdf_read(nwout, vn_bsubumnc, bsubumnc)      !Half mesh
@@ -1165,6 +1170,7 @@
          CALL cdf_read(nwout, vn_rmns, rmns)
          CALL cdf_read(nwout, vn_zmnc, zmnc)
          CALL cdf_read(nwout, vn_lmnc, lmnc)
+         CALL cdf_read(nwout, vn_lmncf, lmncf)
          CALL cdf_read(nwout, vn_gmns, gmns)
          CALL cdf_read(nwout, vn_bmns, bmns)
          CALL cdf_read(nwout, vn_bsubumns, bsubumns)
@@ -1716,7 +1722,7 @@
 
       IF (ALLOCATED(xm)) DEALLOCATE (xm, xn, xm_nyq, xn_nyq,            &
         rmnc, zmns, lmns, bmnc, gmnc, bsubumnc, iotaf, presf, phipf,    &
-        chipf,                                                          &
+        chipf, lmnsf,                                                   &
         bsubvmnc, bsubsmns, bsupumnc, bsupvmnc, currvmnc, iotas, mass,  &
         pres, beta_vol, phip, buco, bvco, phi, vp, jcuru, am, ac, ai,   &
         jcurv, specw, Dmerc, Dshear, Dwell, Dcurr, Dgeod, equif, jdotb, &
@@ -1738,7 +1744,7 @@
 
       IF (ALLOCATED(rmns)) DEALLOCATE (rmns, zmnc, lmnc,                &
           bmns, gmns, bsubumns, bsubvmns, bsubsmnc,                     &
-          bsupumns, bsupvmns, stat=istat(5))
+          bsupumns, bsupvmns, lmncf, stat=istat(5))
 
       IF (ALLOCATED(bsubumnc_sur)) THEN
          DEALLOCATE(bsubumnc_sur, bsubvmnc_sur,                         &
