@@ -249,7 +249,7 @@
          Dmerc, Dshear, Dwell, Dcurr, Dgeod, equif, extcur,             &
          sknots, ystark, y2stark, pknots, ythom, y2thom,                &
          anglemse, rmid, qmid, shear, presmid, alfa, curmid, rstark,    &
-         qmeas, datastark, rthom, datathom, dsiobt
+         qmeas, datastark, rthom, datathom, dsiobt, xc_reset
       LOGICAL :: lasym, lthreed, lwout_opened=.false.
       CHARACTER (len=long_name) :: mgrid_file
       CHARACTER (len=long_name) :: input_extension
@@ -1141,7 +1141,9 @@
       CALL cdf_read(nwout, vn_rmnc, rmnc)
       CALL cdf_read(nwout, vn_zmns, zmns)
       CALL cdf_read(nwout, vn_lmns, lmns)
-      CALL cdf_read(nwout, vn_lmnsf, lmnsf)
+      IF (version_ .ge. 10.0) THEN
+         CALL cdf_read(nwout, vn_lmnsf, lmnsf)
+      END IF
       CALL cdf_read(nwout, vn_gmnc, gmnc)              !Half mesh
       CALL cdf_read(nwout, vn_bmnc, bmnc)              !Half mesh
       CALL cdf_read(nwout, vn_bsubumnc, bsubumnc)      !Half mesh
@@ -1154,6 +1156,12 @@
       IF (version_ .ge. 9.0) THEN
          CALL cdf_read(nwout, vn_currumnc, currumnc)
          CALL cdf_read(nwout, vn_currvmnc, currvmnc)
+      END IF
+
+      IF (version_ .ge. 10.0) THEN
+         CALL cdf_inquire(nwout, vn_xc, dimlens)
+         ALLOCATE (xc_reset(dimlens(1)), stat = ierror)
+         CALL cdf_read(nwout, vn_xc, xc_reset)
       END IF
 
       IF (lfreeb) THEN
@@ -1171,7 +1179,9 @@
          CALL cdf_read(nwout, vn_rmns, rmns)
          CALL cdf_read(nwout, vn_zmnc, zmnc)
          CALL cdf_read(nwout, vn_lmnc, lmnc)
-         CALL cdf_read(nwout, vn_lmncf, lmncf)
+         IF (version_ .ge. 10.0) THEN
+            CALL cdf_read(nwout, vn_lmncf, lmncf)
+         END IF
          CALL cdf_read(nwout, vn_gmns, gmns)
          CALL cdf_read(nwout, vn_bmns, bmns)
          CALL cdf_read(nwout, vn_bsubumns, bsubumns)
@@ -1761,6 +1771,8 @@
       IF (ALLOCATED(currumnc)) DEALLOCATE (currumnc)
       IF (ALLOCATED(currumns)) DEALLOCATE (currumns, currvmns)
       IF (ALLOCATED(rzl_local)) DEALLOCATE (rzl_local)
+
+      IF (ALLOCATED(xc_reset)) DEALLOCATE (xc_reset)
 
       IF (ANY(istat .ne. 0))                                            &
             STOP 'Deallocation error in read_wout_deallocate'
