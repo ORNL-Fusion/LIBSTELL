@@ -94,7 +94,8 @@
         vn_bsupumns_sur = 'bsupumns_sur',                               &
         vn_bsupvmns_sur = 'bsupvmns_sur',                               &
         vn_rbc = 'rbc', vn_zbs = 'zbs', vn_rbs = 'rbs', vn_zbc = 'zbc', &
-        vn_mnyq = 'mnyq', vn_nnyq = 'nnyq', vn_xc = 'xc'
+        vn_mnyq = 'mnyq', vn_nnyq = 'nnyq', vn_xc = 'xc',               &
+        vn_ivac = 'ivac'
 ! Long names (ln_...)
       CHARACTER(LEN=*), PARAMETER :: ln_version = 'VMEC Version',       &
         ln_extension = 'Input file extension', ln_mgrid = 'MGRID file', &
@@ -214,7 +215,8 @@
         ln_zbc = 'Initial boundary Z cos(mu-nv) coefficients',          &
         ln_mnyq = 'Poloidal modes (Nyquist)',                           &
         ln_nnyq = 'Toroidal modes (Nyquist)',                           &
-        ln_xc = 'internal state array'
+        ln_xc = 'internal state array',                                 &
+        ln_ivac = 'vacuume iteration counter for free boundary restart'
 #endif
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
