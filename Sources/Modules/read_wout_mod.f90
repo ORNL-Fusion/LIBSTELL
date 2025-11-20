@@ -224,7 +224,7 @@
       INTEGER :: nfp, ns, mpol, ntor, mnmax, mnmax_nyq, itfsq, niter,   &
           iasym, ireconstruct, ierr_vmec, imse, itse, nstore_seq,       &
           isnodes, ipnodes, imatch_phiedge, isigng, mnyq, nnyq, ntmax,  &
-          mnmaxpot
+          mnmaxpot, ivac
       REAL(rprec) :: wb, wp, gamma, pfac, rmax_surf, rmin_surf,         &
           zmax_surf, aspect, betatot, betapol, betator, betaxis, b0,    &
           tswgt, msewgt, flmwgt, bcwgt, phidiam, version_,              &
@@ -1164,6 +1164,7 @@
          CALL cdf_inquire(nwout, vn_xc, dimlens)
          ALLOCATE (xc_reset(dimlens(1)), stat = ierror)
          CALL cdf_read(nwout, vn_xc, xc_reset)
+         CALL cdf_read(nwout, vn_ivac, ivac)
       END IF
 
       IF (lfreeb) THEN
