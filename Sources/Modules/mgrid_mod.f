@@ -3,25 +3,27 @@
       USE stel_kinds
       USE vmec_input, ONLY: nbfld, nflxs, lfreeb, lrecon
       USE vsvd0, ONLY: nigroup, nparts, npfcoil, nbcoilsp, nfloops,
-     1                 nbctotp
+     &                 nbctotp
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: nlimset = 2       !number of different limiters
       CHARACTER(LEN=*), PARAMETER :: 
-     1   vn_br0 = 'br', vn_bp0 = 'bp', vn_bz0 = 'bz',
-     2   vn_ar0 = 'ar', vn_ap0 = 'ap', vn_az0 = 'az',
-     3   vn_ir = 'ir', vn_jz = 'jz',
-     4   vn_kp = 'kp', vn_nfp = 'nfp',
-     5   vn_rmin='rmin', vn_rmax='rmax', vn_zmin='zmin', 
-     6   vn_zmax='zmax', vn_coilgrp='coil_group' 
+     &   vn_br0 = 'br', vn_bp0 = 'bp', vn_bz0 = 'bz',
+     &   vn_ar0 = 'ar', vn_ap0 = 'ap', vn_az0 = 'az',
+     &   vn_ir = 'ir', vn_jz = 'jz',
+     &   vn_kp = 'kp', vn_nfp = 'nfp',
+     &   vn_rmin = 'rmin', vn_rmax = 'rmax', vn_zmin = 'zmin',
+     &   vn_zmax = 'zmax', vn_coilgrp = 'coil_group',
+     &   vn_coilfile_name = 'coils_file'
       CHARACTER(LEN=*), PARAMETER ::
-     1  vn_nextcur = 'nextcur',  vn_mgmode='mgrid_mode', 
-     2  vn_coilcur = 'raw_coil_cur',
-     3  vn_flp = 'nobser', vn_nobd = 'nobd', vn_nbset = 'nbsets', 
-     4  vn_nbfld = 'nbfld',
-     2  ln_flp = 'flux loops', ln_nobd = 'Connected flux loops',
-     3  ln_nbset = 'B-coil loops', ln_next = 'External currents',
-     4  ln_nbfld = 'B-coil measurements'
+     &  vn_nextcur = 'nextcur',  vn_mgmode='mgrid_mode',
+     &  vn_coilcur = 'raw_coil_cur',
+     &  vn_flp = 'nobser', vn_nobd = 'nobd', vn_nbset = 'nbsets',
+     &  vn_nbfld = 'nbfld',
+     &  ln_flp = 'flux loops', ln_nobd = 'Connected flux loops',
+     &  ln_nbset = 'B-coil loops', ln_next = 'External currents',
+     &  ln_nbfld = 'B-coil measurements',
+     &  ln_coilfile_name = 'Name of the coils file.'
  
 C-----------------------------------------------
 C   L o c a l   V a r i a b l e s
