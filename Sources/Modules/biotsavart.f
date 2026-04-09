@@ -509,19 +509,16 @@
 !-----------------------------------------------
       INTEGER :: igroup
       REAL :: cosp, sinp
-      REAL(rprec), DIMENSION(3) :: xpt, bvec
+      REAL(rprec), DIMENSION(3) :: bvec
 !-----------------------------------------------
 
 !     Convert to cartesian coordinates
       cosp = COS(phi);    sinp = SIN(phi)
-      xpt(1) = rp*cosp
-      xpt(2) = rp*sinp
-      xpt(3) = zp
 
       igroup = 1
       IF (PRESENT(ig)) igroup = ig
 
-      CALL bsc_b (coil_group(igroup), xpt, bvec)
+      CALL bsc_b (coil_group(igroup), (/ rp*cosp, rp*sinp, zp /), bvec)
 
 !     Convert back to cylindrical coordinates from cartesian vector components of B
       br = bvec(1)*cosp + bvec(2)*sinp
@@ -608,19 +605,16 @@
 !-----------------------------------------------
       INTEGER :: igroup
       REAL :: cosp, sinp
-      REAL(rprec), DIMENSION(3) :: xpt, avec
+      REAL(rprec), DIMENSION(3) :: avec
 !-----------------------------------------------
 
 !     Convert to cartesian coordinates
       cosp = COS(phi);    sinp = SIN(phi)
-      xpt(1) = rp*cosp
-      xpt(2) = rp*sinp
-      xpt(3) = zp
 
       igroup = 1
       IF (PRESENT(ig)) igroup = ig
 
-      CALL bsc_a (coil_group(igroup), xpt, avec)
+      CALL bsc_a (coil_group(igroup), (/ rp*cosp, rp*sinp, zp /), avec)
 
 !     Convert back to cylindrical coordinates from cartesian vector components of A
       ar = avec(1)*cosp + avec(2)*sinp
