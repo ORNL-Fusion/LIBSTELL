@@ -1403,8 +1403,13 @@
          CALL bsc_a_coil(this(i),x,aarray(1:3,i))
       END DO
 
-! Sum for A field
-      a(1:3) = SUM(aarray(1:3,1:n),2)
+! Sum for A field (explicit loop: reproducible with OpenMP; avoid parallel SUM)
+      a(1) = zero; a(2) = zero; a(3) = zero
+      DO i = 1, n
+         a(1) = a(1) + aarray(1,i)
+         a(2) = a(2) + aarray(2,i)
+         a(3) = a(3) + aarray(3,i)
+      END DO
       
 !  Rescale if bsc_k2 present
       IF (PRESENT(bsc_k2)) THEN
@@ -1710,8 +1715,13 @@
          CALL bsc_b_coil(this(i),x,barray(1:3,i))
       END DO
 
-! Sum for B field
-      b = SUM(barray(1:3,1:n),2)
+! Sum for B field (explicit loop: reproducible with OpenMP; avoid parallel SUM)
+      b(1) = zero; b(2) = zero; b(3) = zero
+      DO i = 1, n
+         b(1) = b(1) + barray(1,i)
+         b(2) = b(2) + barray(2,i)
+         b(3) = b(3) + barray(3,i)
+      END DO
       
 !  Rescale if bsc_k2 present
       IF (PRESENT(bsc_k2)) THEN
