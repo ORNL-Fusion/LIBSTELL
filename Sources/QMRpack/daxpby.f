@@ -13,7 +13,7 @@ C     *****************************************************************
 C
 C**********************************************************************
 C
-      SUBROUTINE DAXPBY (N,DZ,DA,DX,DB,DY)
+      SUBROUTINE DAXPBY_ (N,DZ,DA,DX,DB,DY)
       USE stel_kinds, ONLY: rprec, dp
       IMPLICIT NONE
 C

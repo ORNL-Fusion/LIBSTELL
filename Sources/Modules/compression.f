@@ -14,6 +14,9 @@
       MODULE compression
       USE stel_kinds
       USE mpi_inc
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_lapack_lp64
+#endif
 
       IMPLICIT NONE
 
@@ -148,22 +151,38 @@
       svd_work = 0.0
 
 !  Find the optimal work size.
+#ifdef ACCELERATE_NEW_LAPACK
+      CALL dgesvd('All', 'All', m, n,                                          &
+     &            compression_construct_new%data_buffer(1,1), m,               &
+     &            w_svd(1), compression_construct_new%u_buffer(1,1), m,        &
+     &            compression_construct_new%wvt_buffer(1,1), n,                &
+     &            svd_work(1), -1, status)
+#else
       CALL dgesvd('All', 'All', m, n,                                          &
      &            compression_construct_new%data_buffer, m,                    &
      &            w_svd, compression_construct_new%u_buffer, m,                &
      &            compression_construct_new%wvt_buffer, n, svd_work, -1,       &
      &            status)
+#endif
       work_size = INT(svd_work(1))
       DEALLOCATE(svd_work)
       ALLOCATE(svd_work(work_size))
       svd_work = 0.0
 
 !  Factor the matrix to M = U * W * V^T
+#ifdef ACCELERATE_NEW_LAPACK
+      CALL dgesvd('All', 'All', m, n,                                          &
+     &            compression_construct_new%data_buffer(1,1), m,               &
+     &            w_svd(1), compression_construct_new%u_buffer(1,1), m,        &
+     &            compression_construct_new%wvt_buffer(1,1), n,                &
+     &            svd_work(1), work_size, status)
+#else
       CALL dgesvd('All', 'All', m, n,                                          &
      &            compression_construct_new%data_buffer, m,                    &
      &            w_svd, compression_construct_new%u_buffer, m,                &
      &            compression_construct_new%wvt_buffer, n, svd_work,           &
      &            work_size, status)
+#endif
       CALL assert_eq(0, status, 'dgesvd problem when compressing ' //          &
      &                          'buffer')
 

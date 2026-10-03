@@ -30,6 +30,9 @@ C-----------------------------------------------
 
 #ifndef CRAY
       SUBROUTINE sgbsl (ABD, LDA, N, ML, MU, IPVT, B, JOB)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+#endif
       USE LIPREC, ONLY: WP => SP
       IMPLICIT NONE
 C-----------------------------------------------
@@ -47,8 +50,10 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   E X T E R N A L   F U N C T I O N S
 C-----------------------------------------------
+#ifndef ACCELERATE_NEW_LAPACK
       REAL(WP) , EXTERNAL :: sdot
       EXTERNAL saxpy
+#endif
 C-----------------------------------------------
 c
 c     sgbsl solves the real band system
@@ -179,6 +184,9 @@ c
       END SUBROUTINE sgbsl
 
       SUBROUTINE dgbsl (ABD, LDA, N, ML, MU, IPVT, B, JOB)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+#endif
       USE LIPREC, ONLY: WP => DP
       IMPLICIT NONE
 C-----------------------------------------------
@@ -196,8 +204,10 @@ C-----------------------------------------------
 C-----------------------------------------------
 C   E X T E R N A L   F U N C T I O N S
 C-----------------------------------------------
+#ifndef ACCELERATE_NEW_LAPACK
       REAL(WP) , EXTERNAL :: ddot
       EXTERNAL daxpy
+#endif
 C-----------------------------------------------
 c
 c     sgbsl solves the REAL band system

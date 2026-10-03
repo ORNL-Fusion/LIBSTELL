@@ -2,6 +2,9 @@
       USE stel_kinds, ONLY: dp
       USE stel_constants, ONLY: one, zero
       USE mpi_inc
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+#endif
       IMPLICIT NONE
 
       TYPE GMRES_INFO
@@ -115,7 +118,11 @@
 !          IF (lprint) PRINT *,'CALL PRECONDL'        
 !         work(colz) <-- M^{-1} * work(colx)
 !         WRITE(10000,*) "left_dcopy"; CALL FLUSH(10000)
+#ifdef ACCELERATE_NEW_LAPACK
+         CALL dcopy(n,sx(1),1,sz(1),1)
+#else
          CALL dcopy(n,sx,1,sz,1)
+#endif
 !         WRITE(10000,*) "precondLeft"; CALL FLUSH(10000)
          CALL apply_precond(sz)
          GOTO 10
@@ -124,7 +131,11 @@
 ! perform the right preconditioning
 !          IF (lprint) PRINT *,'CALL PRECONDR'        
 !         WRITE(10000,*) "right_dcopy"; CALL FLUSH(10000)
+#ifdef ACCELERATE_NEW_LAPACK
+         CALL dcopy(n,sx(1),1,sz(1),1)
+#else
          CALL dcopy(n,sx,1,sz,1)
+#endif
 !         WRITE(10000,*) "precondRight"; CALL FLUSH(10000)
          CALL apply_precond(sz)
          GOTO 10

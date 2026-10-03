@@ -29,6 +29,9 @@
 
 #ifndef CRAY
       SUBROUTINE sgbfa (ABD, LDA, N, ML, MU, IPVT, INFO)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+#endif
       USE LIPREC, ONLY: WP => SP
       IMPLICIT NONE
 !-----------------------------------------------
@@ -45,7 +48,9 @@
       REAL(WP) :: T
       INTEGER :: ISAMAX1(1)
 !-----------------------------------------------
+#ifndef ACCELERATE_NEW_LAPACK
       EXTERNAL SSCAL, SAXPY
+#endif
 !
 !     sgbfa factors a REAL band matrix by elimination.
 !
@@ -208,6 +213,9 @@
       END SUBROUTINE sgbfa
 
       SUBROUTINE dgbfa (ABD, LDA, N, ML, MU, IPVT, INFO)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+#endif
       USE LIPREC, ONLY: WP => DP
       IMPLICIT NONE
 !-----------------------------------------------
@@ -224,7 +232,9 @@
       REAL(WP) :: T
       INTEGER :: ISAMAX1(1)
 !-----------------------------------------------
+#ifndef ACCELERATE_NEW_LAPACK
       EXTERNAL DSCAL, DAXPY
+#endif
 !
 !     sgbfa factors a REAL band matrix by elimination.
 !
@@ -303,7 +313,7 @@
 !
 !     subroutines and functions
 !
-!     blas saxpy ,sscal
+!     blas daxpy ,dscal
 !     fortran max,min
 !
 !     internal variables

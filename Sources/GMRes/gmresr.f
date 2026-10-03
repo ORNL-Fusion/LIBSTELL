@@ -1,5 +1,10 @@
       SUBROUTINE gmresr(oktest,n,j,mgmres,b,x,work,eps,stc,
      &                  maxits,resid,matvec,iflag)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+#else
+      extern ddot, dnrm2
+#endif
 C*********************************************************
 C GMRESR algorithm to solve linear system Ax = b
 C
@@ -65,7 +70,7 @@ C     then other variables in alphabetical order
       integer i,iflag,its,nits,itsinn,j,k,maxits,mgmres,n
 
       real*8 b(n),x(n),work(n,0:(2*j+mgmres+2-1)),
-     &     alpha,alphai,cknorm,ckres,ddot,dnrm2,eps,epsinn,
+     &     alpha,alphai,cknorm,ckres,eps,epsinn,
      &     res0,resnor,resid
 
 C distribute work space work(n,*) among some virtual variables;
@@ -117,7 +122,11 @@ C     Reset iteration counter
 C     Calculate (initial) residual norm
       call matvec(x,work(1,workres),n)
       alpha = -1
+#ifdef ACCELERATE_NEW_LAPACK
+      call daxpy(n,alpha,b(1),1,work(1,workres),1)
+#else
       call daxpy(n,alpha,b,1,work(1,workres),1)
+#endif
       call dscal(n,alpha,work(1,workres),1)
 
 C     Calculate residual norm and quit if it is zero
@@ -226,7 +235,11 @@ C        Normalize c(1,k) and "normalize" u(1,k)
 
 C        Update current solution and residual
          ckres = ddot(n,work(1,c+mod(k,j)),1,work(1,workres),1)
-         call daxpy(n, ckres,work(1,u+mod(k,j)),1,x,          1)
+#ifdef ACCELERATE_NEW_LAPACK
+         call daxpy(n, ckres,work(1,u+mod(k,j)),1,x(1),1)
+#else
+         call daxpy(n, ckres,work(1,u+mod(k,j)),1,x,1)
+#endif
          call daxpy(n,-ckres,work(1,c+mod(k,j)),1,work(1,workres),1)
 
 C        call show(n,10,x,'GMRESR       ')  
@@ -261,9 +274,13 @@ C End of GMRESR subroutine
       end 
 
 C=============================================================================
-       subroutine gmres0(oktest,n,im,rhs,uu,cc,work0,eps,maxits,matvec)
-
-C This is the modified GMRES routine gmres0 adapted for GMRESR by 
+      subroutine gmres0(oktest,n,im,rhs,uu,cc,work0,eps,maxits,matvec)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+#else
+      extern ddot, dnrm2
+#endif
+C This is the modified GMRES routine gmres0 adapted for GMRESR by
 C Mike Botchev, Utrecht University, Dec. 1996
 C For detail on how to make GMRES (for GMRESR) cheaper see 
 C the above-mentioned paper on GMRESR 
@@ -319,7 +336,7 @@ c-------------------------------------------------------------
       logical oktest
       integer jjj,jj1
       integer i,i1,im,its,j,k,k1,maxits,n
-      real*8 cc,coeff,coef1,dabs,ddot,dnrm2,dsqrt,eps,epsmac,
+      real*8 cc,coeff,coef1,dabs,dsqrt,eps,epsmac,
      &                 gam,rhs(n),ro,uu(n),work0(n,im+1),t     
 
       real*8 hh(maxd1,maxdim),hh1(maxd1,maxdim),c(maxdim),
@@ -350,10 +367,18 @@ C        make initial guess zero:
          coeff = 0.0
          uu = coeff*uu !call dscal(n,coeff,uu,1)
 C        make initial residual right-hand side:
+#ifdef ACCELERATE_NEW_LAPACK
+         call dcopy(n,rhs(1),1,work0(1,1),1)
+#else
          call dcopy(n,rhs,1,work0,1)
+#endif
 
-	 ro = dnrm2 (n, work0, 1)
-	 if ((ro .eq. 0.0d0).or.(ro .le. eps)) then
+#ifdef ACCELERATE_NEW_LAPACK
+	  ro = dnrm2 (n, work0(1,1), 1)
+#else
+      ro = dnrm2 (n, work0, 1)
+#endif
+	  if ((ro .eq. 0.0d0).or.(ro .le. eps)) then
             call matvec(uu, cc, n)
             eps = ro
             maxits = its 
@@ -361,13 +386,17 @@ C        make initial residual right-hand side:
          end if
 
          coeff = 1 / ro
+#ifdef ACCELERATE_NEW_LAPACK
+         call dscal(n,coeff,work0(1,1),1)
+#else
          call dscal(n,coeff,work0,1)
+#endif
 
-	 if (oktest) write(*, 199) its, ro
+	  if (oktest) write(*, 199) its, ro
 
 c        initialize 1-st term  of rhs of hessenberg system..
-	 rs(1) = ro
-	 i = 0
+	  rs(1) = ro
+	  i = 0
 
  4       continue
             i=i+1
@@ -415,20 +444,28 @@ c           determine residual norm and test for convergence-
             hh(i,i) = c(i)*hh(i,i) + s(i)*hh(i1,i)
             ro = dabs(rs(i1))
             if (oktest) write(*, 199) its, ro
-	 if ((i .lt. im) .and. (ro .gt. eps))  goto 4
+	  if ((i .lt. im) .and. (ro .gt. eps))  goto 4
 c
 c        now compute solution. first solve upper triangular system.
 c
 C        rs := hh(1:i,1:i) ^-1 * rs
 
-         call dtrsv('U','N','N',i,hh,maxd1,rs,1)   
+#ifdef ACCELERATE_NEW_LAPACK
+      call dtrsv('U','N','N',i,hh(1,1),maxd1,rs(1),1)
+#else
+      call dtrsv('U','N','N',i,hh,maxd1,rs,1)
+#endif
 c        done with back substitution..
 
 c        now form linear combination to get vector uu
-	 do j=1, i
-            t = rs(j)
-	    call daxpy(n, t, work0(1,j), 1, uu,1)
-         end do
+      do j=1, i
+         t = rs(j)
+#ifdef ACCELERATE_NEW_LAPACK
+         call daxpy(n, t, work0(1,j), 1, uu(1),1)
+#else
+         call daxpy(n, t, work0(1,j), 1, uu,1)
+#endif
+      end do
 C        DO NOT restart outer loop EVEN when necessary (that is crucial
 C        for this implementation of GMRESR):  NEVER goto 10 !  
 C     if (ro .gt. eps .and. its .lt. maxits) goto 10
@@ -437,15 +474,19 @@ C     Finally, reproduce vector cc as cc = A*uu = work0*hh1*rs:
 C     rs := hh1(1:i1,1:i) * rs
       coeff = 1
       coef1 = 0
-      call dgemv('N',i1,i,coeff,hh1,maxd1,rs,1,coef1,rs1,1)
+#ifdef ACCELERATE_NEW_LAPACK
+      call dgemv('N',i1,i,coeff,hh1(1,1),maxd1,rs(1),1,coef1,rs1(1),1)
+#else
+      call dgemv('N',i1,i,coeff,hh1,maxd1,rs(1),1,coef1,rs1,1)
+#endif
 
 C     now multiply Krylov basis vectors work0 by rs:
 C     cc := work0*rs
       cc = coef1*cc !call dscal(n,coef1,cc,1)
       do j=1, i1
          t = rs1(j)
-	 call daxpy(n, t, work0(1,j), 1, cc,1)
-      end do        
+	     call daxpy(n, t, work0(1,j), 1, cc,1)
+      end do
 
  199  format('itsinn =', i4, ' res. norm =', d20.6)
 
