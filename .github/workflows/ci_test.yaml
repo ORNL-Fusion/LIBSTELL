@@ -33,6 +33,7 @@ jobs:
               run: |
                 brew install netcdf-fortran
                 brew install scalapack
+                ls /Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk/usr/include
             - name: Install Libraries Linux
               if: ${{matrix.os == 'ubuntu-latest'}}
               shell: bash
@@ -44,7 +45,6 @@ jobs:
                 sudo apt-get install libscalapack-openmpi-dev
                 sudo apt-get install libblas-dev
                 sudo apt-get install liblapack-dev
-                ls /Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk/usr/include
             - name: Configure CMake Mac
               if: ${{matrix.os == 'macos-latest'}}
               shell: bash
