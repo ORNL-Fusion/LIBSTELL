@@ -18,6 +18,10 @@ C
 C**********************************************************************
 C
       SUBROUTINE DUTFX (NDIM,NLEN,NLIM,VECS,TOL,INFO)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_blas_lp64
+      USE accelerate_lapack_lp64, ONLY: DLAMCH
+#endif
       USE stel_kinds, ONLY: rprec
       IMPLICIT NONE
 C
@@ -68,8 +72,11 @@ C     April 13, 1993
 C
 C**********************************************************************
 C
-      EXTERNAL DLAMCH, DAXPBY, DRANDN, DNRM2, DDOT
+      EXTERNAL DAXPBY_, DRANDN
+#ifndef ACCELERATE_NEW_LAPACK
+      EXTERNAL DLAMCH, DNRM2, DDOT
       REAL(rprec)  :: DLAMCH, DNRM2, DDOT
+#endif
 C
       INTEGER      :: INFO(4), NDIM, NLEN, NLIM
       REAL(rprec)  :: VECS(NDIM,9)
@@ -162,8 +169,8 @@ C
 C
 C     Set x_0 = 0 and compute the norm of the initial residual.
 C
-      CALL DAXPBY (NLEN,VECS(1,5),DONE,VECS(1,2),DZERO,VECS(1,5))
-      CALL DAXPBY (NLEN,VECS(1,1),DZERO,VECS(1,1),DZERO,VECS(1,1))
+      CALL DAXPBY_ (NLEN,VECS(1,5),DONE,VECS(1,2),DZERO,VECS(1,5))
+      CALL DAXPBY_ (NLEN,VECS(1,1),DZERO,VECS(1,1),DZERO,VECS(1,1))
       R0 = DNRM2(NLEN,VECS(1,5),1)
       IF ((TOL.GE.DONE).OR.(R0.EQ.DZERO)) GO TO 90
 C
@@ -180,9 +187,9 @@ C
       ETA  = DZERO
       TAU  = R0 * R0
       IERR = 8
-      CALL DAXPBY (NLEN,VECS(1,8),DZERO,VECS(1,8),DZERO,VECS(1,8))
-      CALL DAXPBY (NLEN,VECS(1,4),DZERO,VECS(1,4),DZERO,VECS(1,4))
-      CALL DAXPBY (NLEN,VECS(1,6),DZERO,VECS(1,6),DZERO,VECS(1,6))
+      CALL DAXPBY_ (NLEN,VECS(1,8),DZERO,VECS(1,8),DZERO,VECS(1,8))
+      CALL DAXPBY_ (NLEN,VECS(1,4),DZERO,VECS(1,4),DZERO,VECS(1,4))
+      CALL DAXPBY_ (NLEN,VECS(1,6),DZERO,VECS(1,6),DZERO,VECS(1,6))
 C
 C     This is one step of the TFQMR algorithm.
 C     Compute \beta_{n-1} and \rho_{n-1}.
@@ -193,8 +200,8 @@ C
 C
 C     Compute y_{2n-1}, v_{n-1}, and A y_{2n-1}.
 C
-      CALL DAXPBY (NLEN,VECS(1,4),BETA,VECS(1,4),DONE,VECS(1,8)) 
-      CALL DAXPBY (NLEN,VECS(1,6),DONE,VECS(1,5),BETA,VECS(1,6))
+      CALL DAXPBY_ (NLEN,VECS(1,4),BETA,VECS(1,4),DONE,VECS(1,8)) 
+      CALL DAXPBY_ (NLEN,VECS(1,6),DONE,VECS(1,5),BETA,VECS(1,6))
 C
 C     Have the caller carry out AXB, then return here.
 C        CALL AXB (VECS(1,6),VECS(1,9))
@@ -204,7 +211,7 @@ C
       INFO(4) = 9
       RETLBL  = 30
       RETURN
- 30   CALL DAXPBY (NLEN,VECS(1,4),BETA,VECS(1,4),DONE,VECS(1,9))
+ 30   CALL DAXPBY_ (NLEN,VECS(1,4),BETA,VECS(1,4),DONE,VECS(1,9))
 C
 C     Compute \sigma{n-1} and check for breakdowns.
 C
@@ -218,8 +225,8 @@ C     Compute \alpha_{n-1}, d_{2n-1} and w_{2n}.
 C
       ALPHA = RHO / DTMP
       DTMP  = VAR * ETA / ALPHA
-      CALL DAXPBY (NLEN,VECS(1,7),DONE,VECS(1,6),DTMP,VECS(1,7))
-      CALL DAXPBY (NLEN,VECS(1,5),DONE,VECS(1,5),-ALPHA,VECS(1,9))
+      CALL DAXPBY_ (NLEN,VECS(1,7),DONE,VECS(1,6),DTMP,VECS(1,7))
+      CALL DAXPBY_ (NLEN,VECS(1,5),DONE,VECS(1,5),-ALPHA,VECS(1,9))
 C
 C     Compute \varepsilon_{2n-1}^2, \eta_{2n-1}^2, c_{2n-1}^2, and
 C     \tau_{2n-1}^2.
@@ -233,7 +240,7 @@ C
 C
 C     Compute x_{2n-1} and the upper bound for its residual norm.
 C
-      CALL DAXPBY (NLEN,VECS(1,1),DONE,VECS(1,1),ETA,VECS(1,7))
+      CALL DAXPBY_ (NLEN,VECS(1,1),DONE,VECS(1,1),ETA,VECS(1,7))
 C
 C     Compute the residual norm upper bound.
 C     If the scaled upper bound is within one order of magnitude of the
@@ -251,7 +258,7 @@ C
       INFO(4) = 9
       RETLBL  = 40
       RETURN
- 40   CALL DAXPBY (NLEN,VECS(1,9),DONE,VECS(1,2),-DONE,VECS(1,9))
+ 40   CALL DAXPBY_ (NLEN,VECS(1,9),DONE,VECS(1,2),-DONE,VECS(1,9))
       RESN = DNRM2(NLEN,VECS(1,9),1) / R0
       UCHK = RESN
 C
@@ -275,9 +282,9 @@ C
 C
 C     Compute y_{2n}, A y_{2n}, d_{2n}, and w_{2n+1}.
 C
-      CALL DAXPBY (NLEN,VECS(1,6),DONE,VECS(1,6),-ALPHA,VECS(1,4))
+      CALL DAXPBY_ (NLEN,VECS(1,6),DONE,VECS(1,6),-ALPHA,VECS(1,4))
       DTMP = VAR * COS1
-      CALL DAXPBY (NLEN,VECS(1,7),DONE,VECS(1,6),DTMP,VECS(1,7))
+      CALL DAXPBY_ (NLEN,VECS(1,7),DONE,VECS(1,6),DTMP,VECS(1,7))
 C
 C     Have the caller carry out AXB, then return here.
 C        CALL AXB (VECS(1,6),VECS(1,8))
@@ -287,7 +294,7 @@ C
       INFO(4) = 8
       RETLBL  = 60
       RETURN
- 60   CALL DAXPBY (NLEN,VECS(1,5),DONE,VECS(1,5),-ALPHA,VECS(1,8))
+ 60   CALL DAXPBY_ (NLEN,VECS(1,5),DONE,VECS(1,5),-ALPHA,VECS(1,8))
 C
 C     Compute \varepsilon_{2n}^2, \eta_{2n}^2, c_{2n}^2, and
 C     \tau_{2n}^2.
@@ -301,7 +308,7 @@ C
 C
 C     Compute x_{2n}.
 C
-      CALL DAXPBY (NLEN,VECS(1,1),DONE,VECS(1,1),ETA,VECS(1,7))
+      CALL DAXPBY_ (NLEN,VECS(1,1),DONE,VECS(1,1),ETA,VECS(1,7))
 C
 C     Compute the residual norm upper bound.
 C     If the scaled upper bound is within one order of magnitude of the
@@ -319,7 +326,7 @@ C
       INFO(4) = 9
       RETLBL  = 70
       RETURN
- 70   CALL DAXPBY (NLEN,VECS(1,9),DONE,VECS(1,2),-DONE,VECS(1,9))
+ 70   CALL DAXPBY_ (NLEN,VECS(1,9),DONE,VECS(1,2),-DONE,VECS(1,9))
       RESN = DNRM2(NLEN,VECS(1,9),1) / R0
       UCHK = UNRM
 C

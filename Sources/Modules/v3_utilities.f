@@ -563,6 +563,9 @@
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
       SUBROUTINE svdproducts(b,svprod,numzeros)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_lapack_lp64
+#endif
 
 ! This subroutine takes as its first argument an arbitrary real matrix B.
 ! It's purpose is to find the variable in column-space that is
@@ -646,8 +649,14 @@
          c(1:nrow,1:jelim-1) = b(1:nrow,1:jelim-1)
          c(1:nrow,jelim:ncolb-1) = b(1:nrow,jelim+1:ncolb)
 
+#ifdef ACCELERATE_NEW_LAPACK
+         CALL dgesvd('None','None',nrow,ncol,c(1,1),nrow,                      &
+     &      svec(1),c(1,1),nrow,c(1,1),ncol,work_svd(1),l_work_svd,            &
+     &      info_svd)
+#else
          CALL dgesvd('None','None',nrow,ncol,c,nrow,                           &
      &      svec,c,nrow,c,ncol,work_svd,l_work_svd,info_svd)
+#endif
          CALL assert_eq(0,info_svd,sub_name // 'dgesvd problem')
          svp = PRODUCT(svec)
          numzeros(jelim) = COUNT(svec < tiny)
