@@ -3,7 +3,7 @@
 #ifdef ACCELERATE_NEW_LAPACK
       USE accelerate_blas_lp64
 #else
-      extern ddot, dnrm2
+      EXTERNAL ddot, dnrm2
 #endif
 C*********************************************************
 C GMRESR algorithm to solve linear system Ax = b
@@ -278,7 +278,7 @@ C=============================================================================
 #ifdef ACCELERATE_NEW_LAPACK
       USE accelerate_blas_lp64
 #else
-      extern ddot, dnrm2
+      EXTERNAL ddot, dnrm2
 #endif
 C This is the modified GMRES routine gmres0 adapted for GMRESR by
 C Mike Botchev, Utrecht University, Dec. 1996
