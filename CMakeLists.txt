@@ -28,6 +28,7 @@ target_compile_options (stell
                         $<$<COMPILE_LANGUAGE:Fortran>:-cpp>
                         $<$<AND:$<Fortran_COMPILER_ID:Intel>,$<COMPILE_LANGUAGE:Fortran>>:-assume byterecl>
 )
+message (STATUS ${CMAKE_OSX_SYSROOT})
 target_sources (stell
 
                 PRIVATE
