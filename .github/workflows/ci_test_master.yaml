@@ -4,6 +4,7 @@ on:
     push:
 jobs:
     ci_test:
+        fail-fast: false
         strategy:
             matrix:
                 os: [macos-latest, ubuntu-latest]
