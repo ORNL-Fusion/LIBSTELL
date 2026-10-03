@@ -28,6 +28,13 @@ target_compile_options (stell
                         $<$<COMPILE_LANGUAGE:Fortran>:-cpp>
                         $<$<AND:$<Fortran_COMPILER_ID:Intel>,$<COMPILE_LANGUAGE:Fortran>>:-assume byterecl>
 )
+target_sources (stell
+
+                PRIVATE
+                
+                $<$<BOOL:${BLAS_Accelerate_LIBRARY}>:${CMAKE_OSX_SYSROOT}/usr/include/accelerate_blas_lp64.f90>
+                $<$<BOOL:${BLAS_Accelerate_LIBRARY}>:${CMAKE_OSX_SYSROOT}/usr/include/accelerate_lapack_lp64.f90>
+)
 target_compile_definitions (stell
 
                             PUBLIC
@@ -39,6 +46,7 @@ target_compile_definitions (stell
                             $<$<BOOL:${USE_PROFILER}>:PROFILE_ON>
                             $<$<BOOL:${NetCDF_FOUND}>:NETCDF>
                             $<$<BOOL:${MPI_Fortran_FOUND}>:MPI_OPT>
+                            $<$<BOOL:${BLAS_Accelerate_LIBRARY}>:ACCELERATE_NEW_LAPACK>
 )
 #  FIXME: Remove Conditional on 3.18 check once minimum cmake version is above
 #  3.18. The findBLAS and findLAPACK libraries changed the target name after
