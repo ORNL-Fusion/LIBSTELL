@@ -10,6 +10,7 @@ find_package (BLAS REQUIRED)
 find_package (LAPACK REQUIRED)
 
 add_library (stell STATIC)
+add_dependencies (stell pull_libstell)
 
 add_subdirectory (Sources)
 
