@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.14)
 
-project (libstell C Fortran)
+project (libstell C CXX Fortran)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package (NetCDF MODULE REQUIRED)
@@ -92,5 +92,10 @@ target_link_libraries (xstell_unit_test_runner PUBLIC stell)
 #  Build file_opts testers
 add_executable (xstell_file_opts_runner)
 target_link_libraries (xstell_file_opts_runner PUBLIC stell)
+
+add_executable (xnetcdf_diff)
+add_dependencies (xnetcdf_diff pull_parvmec)
+target_link_libraries (xnetcdf_diff PUBLIC stell)
+target_compile_features (xnetcdf_diff PRIVATE cxx_std_11)
 
 add_subdirectory (Testing)
