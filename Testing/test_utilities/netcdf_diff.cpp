@@ -22,7 +22,8 @@
 ///     @item3{@fixed_width{-netcdf_file1}, Y, First netcdf file name.}
 ///     @item3{@fixed_width{-netcdf_file2}, Y, Second netcdf file name.}
 ///     @item3{@fixed_width{-quantity},     Y, Netcdf quantity to check.}
-///     @item3{@fixed_width{-tol},          Y, Tolarance value.}
+///     @item3{@fixed_width{-tol},          Y, Tolerance value.}
+///     @item3{@ficed_width{-sum},          N, Compare sum of arrays.}
 ///  @end_table
 ///
 ///  @section netcdf_diff_cl_pasring_prog_ref_sec Programmers Reference
@@ -106,6 +107,8 @@ int main(int argc, const char * argv[]) {
         std::cout << "                                                                                " << std::endl;
         std::cout << "  -tol          Y Tolarance value.                                              " << std::endl;
         std::cout << "                                                                                " << std::endl;
+        std::cout << "  -sum          N Compare sum of arrays.                                        " << std::endl;
+        std::cout << "                                                                                " << std::endl;
         std::cout << std::endl;
 
         exit(1);
@@ -119,6 +122,7 @@ int main(int argc, const char * argv[]) {
         netcdf_quantity(args.get<std::string> ("-netcdf_file2"), quantity);
 
     const double tolarance = args.get<double> ("-tol");
+    const bool sum = args.is_set("-sum");
 
     bool pass = q1.size() == q2.size();
     if (!pass) {
@@ -128,10 +132,23 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
 
-    for (size_t i = 0, e = q1.size(); i < e; i++) {
-        pass = pass && std::abs(q1[i] - q2[i]) < tolarance;
+    if (sum) {
+        double sum1 = 0;
+        double sum2 = 0;
+        for (size_t i = 0, e = q1.size(); i < e; i++) {
+            sum1 += q1[i];
+            sum2 += q2[i];
+        }
+        pass = std::abs(sum1 - sum2) < tolarance;
         if (!pass) {
-            std::cout << std::abs(q1[i] - q2[i]) << std::endl;
+            std::cout << std::abs(sum1 - sum2) << std::endl;
+        }
+    } else {
+        for (size_t i = 0, e = q1.size(); i < e; i++) {
+            pass = pass && std::abs(q1[i] - q2[i]) < tolarance;
+            if (!pass) {
+                std::cout << std::abs(q1[i] - q2[i]) << std::endl;
+            }
         }
     }
 
