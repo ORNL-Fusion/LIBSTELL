@@ -96,6 +96,6 @@ target_link_libraries (xstell_file_opts_runner PUBLIC stell)
 add_executable (xnetcdf_diff)
 add_dependencies (xnetcdf_diff pull_parvmec)
 target_link_libraries (xnetcdf_diff PUBLIC stell)
-target_compile_features (xnetcdf_diff PRIVATE cxx_std_11)
+target_compile_features (xnetcdf_diff PRIVATE cxx_std_20)
 
 add_subdirectory (Testing)

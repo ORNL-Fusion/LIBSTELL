@@ -86,11 +86,13 @@ namespace netcdf_test {
 ///  @returns True if the key was set.
 //------------------------------------------------------------------------------
         bool is_set(const std::string &key) const {
-            return commands.find(key) != commands.end();
+            return commands.contains(key);
         }
 
 //------------------------------------------------------------------------------
 ///  @brief Get the value of the agument.
+///
+///  @tparam TYPE Type to read the value as.
 ///
 ///  @param[in] key Commandline key to check.
 ///  @returns Value of the argument.
